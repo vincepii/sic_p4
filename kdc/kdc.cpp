@@ -1,10 +1,27 @@
 #include "../include/utilities.h"
 
 /*
- * Processo multithreaded,
+ * Processo multithreaded, attende una richiesta sulla accept e crea un
+ * thread gestore
  */
 
 using namespace std;
+
+void* body(void* arg){
+	int sd = (int) arg;
+
+	//thread pronto a gestire la comunicazione sul socket sd
+	//segue pseudocodice:
+	/*
+	 * ricevi messaggio del tipo A, B, Na
+	 * Trova la chiave condivisa con A da file
+	 * Trova la chiave pubblica di B da file
+	 * Cifra, usando Kat, la quantità {A, B, Na, eb}
+	 * Invia sul socket il messaggio: A, B, {A, B, Na, eb}Kat
+	 */
+
+	//fine thread gestore
+}
 
 int main(int argc, char* argv[]){
 	pthread_t tid;
