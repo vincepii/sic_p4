@@ -39,9 +39,9 @@ int main(int argc, char* argv[]){
 
 	while(1) {
 		curr_sd = accept(base_sd, CAST_ADDR(&c_add), &addrlen);
-		if(curr_sd < 0) sys_err("KDC: accept failed");
+		if(curr_sd < 0) sys_err("Server: accept failed");
 		if (pthread_create(&tid, 0, body, (void *) curr_sd) !=0)
-			sys_err("KDC: error creating thread for client");
+			sys_err("Server: error creating thread for client");
 	}
 	return 0;
 }
