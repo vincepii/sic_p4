@@ -5,17 +5,26 @@
 #ifndef __encryption_h__
 #define __encryption_h__
 
-class encryption{
+class Sym_Encryption{
 	private:
-		/** @fn void user_err (const char *s)
-		 * Reports an error using std::out and quits (exit(-1))
-		 *
-		 * @param[in] s The string that describes the error
-		 */
+		//ricordarsi di fare il distr. perchè il 
+		//contesto va sempre riaggiornato e per ripulire la memoria
+
+		//context
+		EVP_CIPHER_CTX* ctx;
+
 
 	public:
+		//constructor
+		Sym_Encryption();
+		
+		//destructor
+		~Sym_Encryption();
+		
+		//encryption between a peer and kdc
+		char* sym_encrypt(int, int, int, char*);
 
-}
+};
 
 
 #endif
