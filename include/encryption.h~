@@ -1,0 +1,17 @@
+/** @file encryption.h
+ * File containing encryption/decryption functions and data structures.
+ *
+ * */
+#ifndef __encryption_h__
+#define __encryption_h__
+
+class encryption{
+	private:
+		
+
+	public:
+
+}
+
+
+#endif

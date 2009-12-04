@@ -21,6 +21,7 @@ void* body(void* arg){
 	 */
 
 	//fine thread gestore
+	return 0;
 }
 
 int main(int argc, char* argv[]){
