@@ -22,11 +22,6 @@
 
 using namespace std;
 
-/** @def P_KEY_LENGTH
- * Public key length.
- * */
-#define P_KEY_LENGTH 64
-
 /** @def BACKLOG
  * Backlog queue for listen() function.
  * */
