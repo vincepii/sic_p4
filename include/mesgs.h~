@@ -1,0 +1,14 @@
+#include "utilities.h"
+
+class Message {
+	private:
+		int src_id;
+		int dest_id;
+		int nonce;
+		unsigned char* cipher;
+		int cipher_ll;
+	public:
+		Message(int src_id, int dest_id, int nonce = 0, unigned char* cipher = 0, int chipher_ll = 0);
+		int send_mes(int socket);
+		int receive_mes(int socket);
+};

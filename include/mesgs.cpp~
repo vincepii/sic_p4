@@ -1,0 +1,3 @@
+#include "mesgs.h"
+
+Message::Message(int src_id, int dest_id, int nonce = 0, unsigned char* cipher = 0, int chipher_ll = 0)

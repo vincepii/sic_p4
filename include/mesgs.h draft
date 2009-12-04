@@ -1,0 +1,42 @@
+
+//Protocol message M1
+class Type_1_mes {
+	private:
+		int src_id;
+		int dest_id;
+	public:
+		Type_1_mes(int, int);
+		int send_t1m(int socket);
+		int receive_t1m(int socket);
+};
+
+//Protocol messages M2, M4
+class Type_2_mes {
+	private:
+		int src_id;
+		int dest_id;
+		int nonce;
+	public:
+		Type_2_mes(int, int, int);
+		int send_t2m(int socket);
+		int receive_t2m(int socket);
+};
+
+//Protocol messages M3, M5
+class Type_3_mes {
+	private:
+		int src_id;
+		int dest_id;
+		unsigned char* cipher;
+		int cipher_length;
+	public:
+		Type_3_mes(int src_id, int dest_id, unsigned char* cipher, int length);
+		int send_t3m(int socket);
+		int receive_t3m(int socket);
+};
+
+//Protocol message M6
+class Type_4_mes {
+	private:
+		int 
+}
