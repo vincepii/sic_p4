@@ -1,4 +1,4 @@
-#include "encryption.cpp"
+#include "encryption.h"
 
 Sym_Encryption::Sym_Encryption(){
 	//context initialization
@@ -16,7 +16,7 @@ Sym_Encryption::~Sym_Encryption(){
 	return;
 }
 
-char* Sym_Encryption::sym_encrypt(int src, int dst, int nonce, unsigned char* key){
+char* Sym_Encryption::sym_encrypt(int src, int dst, int nonce, const char* key){
 	unsigned char* chipertext;
 	int msg_len;
 	int ct_len;
@@ -24,7 +24,7 @@ char* Sym_Encryption::sym_encrypt(int src, int dst, int nonce, unsigned char* ke
 	int ct_ptr=0;	/*puntatore alla posizione di chipertext 
 					nella quale inserire i nuovi dati cifrati*/
 	
-	msg_len=sizeof(int)*3+strlen(key);
+	msg_len = sizeof(int) * 3 + strlen(key);
 	ct_len=msg_len+EVP_CIPHER_CTX_block_size(this->ctx);
 	chipertext=(unsigned char*)malloc(ct_len);
 	
@@ -34,12 +34,12 @@ char* Sym_Encryption::sym_encrypt(int src, int dst, int nonce, unsigned char* ke
 	EVP_EncryptUpdate(ctx, &chipertext[ct_ptr], &nc, (unsigned char*)dst, sizeof(int));
 	ct_ptr+=nc;
 	
-	EVP_EncryptUpdate(ctx, &chipertext[ct_ptr], &nc, (unsigned char*)nonce, sizeof(int));
+	EVP_EncryptUpdate(ctx, &chipertext[ct_ptr], &nc, (unsigned char *)nonce, sizeof(int));
 	ct_ptr+=nc;
 	
-	EVP_EncryptUpdate(ctx, &chipertext[ct_ptr], &nc, key, strlen(key));	
+	EVP_EncryptUpdate(ctx, &chipertext[ct_ptr], &nc, (unsigned char *)key, strlen(key));
 	ct_ptr+=nc;
 	
 	
-	
+	return 0;
 }

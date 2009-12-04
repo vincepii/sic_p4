@@ -1,3 +1,7 @@
+#include <openssl/evp.h>
+#include <openssl/rand.h>
+#include "../include/utilities.h"
+
 /** @file encryption.h
  * File containing encryption/decryption functions and data structures.
  *
@@ -22,7 +26,7 @@ class Sym_Encryption{
 		~Sym_Encryption();
 		
 		//encryption between a peer and kdc
-		char* sym_encrypt(int, int, int, char*);
+		char* sym_encrypt(int, int, int, const char*);
 
 };
 
