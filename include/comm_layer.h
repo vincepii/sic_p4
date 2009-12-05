@@ -18,7 +18,7 @@ class Mess {
 		void send_mes(int socket);
 		int receive_mes(int socket);
 		void print();
-		~Mess(){ delete[] cipher; };
+		~Mess(){ delete[] this->cipher; };
 };
 
 #endif
