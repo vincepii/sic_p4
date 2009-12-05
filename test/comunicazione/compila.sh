@@ -1,0 +1,7 @@
+#! /bin/bash
+g++ -Wall ../../include/utilities.h ../../include/utilities.cpp -c
+g++ -Wall ../../include/comm_layer.h ../../include/comm_layer.cpp -c
+g++ -Wall -lpthread -lssl apeer.cpp utilities.o comm_layer.o -o apeer
+#./kdc 2020 &
+#sleep 2s
+#./apeer localhost 2020 &

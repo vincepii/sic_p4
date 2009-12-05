@@ -1,4 +1,5 @@
 #include "../include/utilities.h"
+#include "../include/comm_layer.h"
 
 /*
  * Processo multithreaded, attende una richiesta sulla accept e crea un
@@ -9,6 +10,12 @@ using namespace std;
 
 void* body(void* arg){
 	int sd = (int) arg;
+
+	//ricezione messaggio
+	Mess m1(0,0,0,0,0);
+	m1.receive_mes(sd);
+	m1.print();
+
 
 	//thread pronto a gestire la comunicazione sul socket sd
 	//segue pseudocodice:
