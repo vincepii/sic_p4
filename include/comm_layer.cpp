@@ -9,10 +9,14 @@ Mess::Mess(int src_id, int dest_id, int nonce,
 	this->cipher_ll = cipher_ll;
 	if(cipher_ll > 0){
 		this->cipher = new unsigned char[cipher_ll];
-		*(this->cipher) = *cipher;
+		strcpy((char *)this->cipher, (const char *)cipher);
+		//for (int i = 0; i < cipher_ll; i++)
+			//this->cipher[i] = cipher[i];
+		//cout << this->cipher << endl;
 	}
-
-	else this->cipher = NULL;
+	else{
+		this->cipher = NULL;
+	}
 }
 
 void Mess::send_mes(int socket)
@@ -47,7 +51,8 @@ int Mess::receive_mes(int socket)
 	//vector<unsigned char> vett(this->cipher_ll);
 	//safe_read(socket, &vett[0], this->cipher_ll);
 	//this->cipher = vett.data();
-	cout << "Test: " << this->cipher << endl;
+
+	//cout << "Test: " << this->cipher << endl;
 
 	return 1;
 }
