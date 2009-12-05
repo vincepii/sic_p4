@@ -58,7 +58,7 @@ unsigned char* Sym_Encryption::sym_encrypt(const unsigned char* sym_key,
 	EVP_EncryptUpdate(this->ctx, &ciphertext[ct_ptr], &nc, asym_key, strlen((const char*)asym_key));
 	ct_ptr+=nc;
 	
-	if (ct_ptr!=msg_len)
+	if (ct_ptr!=ct_len)
 		sys_err("Symmetric encryption error!");
 		
 	EVP_EncryptFinal(this->ctx, &ciphertext[ct_ptr], &nc);
