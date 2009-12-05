@@ -1,6 +1,8 @@
 #include "encryption.h"
+#include <sstream>
 
-Sym_Encryption::Sym_Encryption(){
+Sym_Encryption::Sym_Encryption()
+{
 	//context initialization
 	this->ctx=(EVP_CIPHER_CTX*)malloc(sizeof(EVP_CIPHER_CTX));
 	EVP_CIPHER_CTX_init(this->ctx);
@@ -8,14 +10,17 @@ Sym_Encryption::Sym_Encryption(){
 }
 
 
-Sym_Encryption::~Sym_Encryption(){
+Sym_Encryption::~Sym_Encryption()
+{
 	if (EVP_CIPHER_CTX_cleanup(this->ctx)==0)
 		sys_err("Context deallocation error!");
 		
 	return;
 }
 
-unsigned char* Sym_Encryption::sym_encrypt(const unsigned char* sym_key, int src, int dst, int nonce, const unsigned char* asym_key){
+unsigned char* Sym_Encryption::sym_encrypt(const unsigned char* sym_key,
+		int src, int dst, int nonce, const unsigned char* asym_key)
+{
 	unsigned char* ciphertext;
 	int msg_len;
 	int ct_len;
@@ -29,14 +34,25 @@ unsigned char* Sym_Encryption::sym_encrypt(const unsigned char* sym_key, int src
 
 	ct_len=msg_len+EVP_CIPHER_CTX_block_size(this->ctx);
 	ciphertext=(unsigned char*)malloc(ct_len);
-printf("ct_len: %d\n", ct_len);
-	EVP_EncryptUpdate(this->ctx, &ciphertext[ct_ptr], &nc, (unsigned char*)src, sizeof(int));
+
+	string s;
+	stringstream out;
+	out << src;
+	s = out.str();
+
+	EVP_EncryptUpdate(this->ctx, &ciphertext[ct_ptr], &nc, (unsigned char *)s.c_str(), sizeof(int));
 	ct_ptr+=nc;
-	printf("funge\n");	
-	EVP_EncryptUpdate(this->ctx, &ciphertext[ct_ptr], &nc, (unsigned char*)dst, sizeof(int));
+
+	out << dst;
+	s = out.str();
+
+	EVP_EncryptUpdate(this->ctx, &ciphertext[ct_ptr], &nc, (unsigned char*)s.c_str(), sizeof(int));
 	ct_ptr+=nc;
 	
-	EVP_EncryptUpdate(this->ctx, &ciphertext[ct_ptr], &nc, (unsigned char *)nonce, sizeof(int));
+	out << nonce;
+	s = out.str();
+
+	EVP_EncryptUpdate(this->ctx, &ciphertext[ct_ptr], &nc, (unsigned char *)s.c_str(), sizeof(int));
 	ct_ptr+=nc;
 	
 	EVP_EncryptUpdate(this->ctx, &ciphertext[ct_ptr], &nc, asym_key, strlen((const char*)asym_key));
