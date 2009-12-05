@@ -1,4 +1,6 @@
 CMD=mk_kdc mk_apeer mk_bpeer
+TESTCOM=test/comunicazione
+TESTSYM=test/cifratura
 
 all: $(CMD)
 
@@ -14,3 +16,5 @@ clean:
 	cd bpeer && make clean
 	cd include && make clean
 	rm -f *~
+	cd $(TESTCOM) && rm -f *.o *~
+	cd $(TESTSYM) && rm -f *.o *~
