@@ -29,8 +29,8 @@ unsigned char* Sym_Encryption::sym_encrypt(const unsigned char* sym_key, int src
 
 	ct_len=msg_len+EVP_CIPHER_CTX_block_size(this->ctx);
 	ciphertext=(unsigned char*)malloc(ct_len);
-printf("ct_len: %d\n", ct_len);
-	EVP_EncryptUpdate(this->ctx, &ciphertext[ct_ptr], &nc, (unsigned char*)src, sizeof(int));
+
+	EVP_EncryptUpdate(this->ctx, &ciphertext[ct_ptr], &nc, src, sizeof(int));
 	ct_ptr+=nc;
 	printf("funge\n");	
 	EVP_EncryptUpdate(this->ctx, &ciphertext[ct_ptr], &nc, (unsigned char*)dst, sizeof(int));
