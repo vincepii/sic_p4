@@ -1,6 +1,6 @@
 #include "utilities.h"
-#include <openssl/evp.h>
-#include <openssl/rand.h>
+//#include <openssl/evp.h>
+//#include <openssl/rand.h>
 
 
 /** @file encryption.h
@@ -21,7 +21,7 @@ class Sym_Encryption{
 
 	public:
 		//constructor
-		Sym_Encryption();
+		Sym_Encryption(int a);
 		
 		//destructor
 		~Sym_Encryption();
@@ -30,7 +30,7 @@ class Sym_Encryption{
 		unsigned char* sym_encrypt(const unsigned char*, int, int, int, const unsigned char*);
 		
 		//decryption beetween a peer and kdc
-		void sym_decrypt(const unsigned char*, int*, int*, int*, unsigned char*);
+		void sym_decrypt(const unsigned char*, const unsigned char*, int*, int*, int*, unsigned char*);
 
 };
 

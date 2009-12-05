@@ -4,7 +4,6 @@ Sym_Encryption::Sym_Encryption(){
 	//context initialization
 	this->ctx=(EVP_CIPHER_CTX*)malloc(sizeof(EVP_CIPHER_CTX));
 	EVP_CIPHER_CTX_init(this->ctx);
-	
 	return;
 }
 
@@ -12,7 +11,7 @@ Sym_Encryption::Sym_Encryption(){
 Sym_Encryption::~Sym_Encryption(){
 	if (EVP_CIPHER_CTX_cleanup(this->ctx)==0)
 		sys_err("Context deallocation error!");
-
+		
 	return;
 }
 
@@ -25,14 +24,15 @@ unsigned char* Sym_Encryption::sym_encrypt(const unsigned char* sym_key, int src
 					nella quale inserire i nuovi dati cifrati*/
 	
 	msg_len = sizeof(int) * 3 + P_KEY_LENGTH;
+
+	EVP_EncryptInit(this->ctx, EVP_des_ecb(), sym_key, NULL);
+
 	ct_len=msg_len+EVP_CIPHER_CTX_block_size(this->ctx);
 	ciphertext=(unsigned char*)malloc(ct_len);
-	
-	EVP_EncryptInit(this->ctx, EVP_des_ecb(), sym_key, NULL);
-	
+printf("ct_len: %d\n", ct_len);
 	EVP_EncryptUpdate(this->ctx, &ciphertext[ct_ptr], &nc, (unsigned char*)src, sizeof(int));
 	ct_ptr+=nc;
-		
+	printf("funge\n");	
 	EVP_EncryptUpdate(this->ctx, &ciphertext[ct_ptr], &nc, (unsigned char*)dst, sizeof(int));
 	ct_ptr+=nc;
 	
@@ -47,7 +47,7 @@ unsigned char* Sym_Encryption::sym_encrypt(const unsigned char* sym_key, int src
 		
 	EVP_EncryptFinal(this->ctx, &ciphertext[ct_ptr], &nc);
 	
-	printf("Ciphertext: ");
+	printf("CCiphertext: \n");
 	for (unsigned int i=0; i<strlen((const char*)ciphertext); i++)
 		printbyte(ciphertext[i]);
 	
@@ -75,7 +75,7 @@ void Sym_Encryption::sym_decrypt(const unsigned char* sym_key, const unsigned ch
 	
 	EVP_DecryptFinal(this->ctx, plaintext, &nd);
 	
-	printf("Plaintext: %s\n", plaintext);
+	printf("PPlaintext: %s\n", plaintext);
 	
 	memcpy((void*)src, (const void*)plaintext[pt_ptr], sizeof(int));
 	pt_ptr+=sizeof(int);
