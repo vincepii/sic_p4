@@ -16,33 +16,30 @@ Sym_Encryption::~Sym_Encryption(){
 	return;
 }
 
-char* Sym_Encryption::sym_encrypt(int src, int dst, int nonce, const char* key){
-	char* chipertext;
+unsigned char* Sym_Encryption::sym_encrypt(const unsigned char* sym_key, int src, int dst, int nonce, const unsigned char* asym_key){
+	unsigned char* ciphertext;
 	int msg_len;
 	int ct_len;
 	int nc;			//numero byte effettivamente cifrati
 	int ct_ptr=0;	/*puntatore alla posizione di chipertext 
 					nella quale inserire i nuovi dati cifrati*/
-	char sym_key[EVP_MAX_KEY_LENGTH];
 	
 	msg_len = sizeof(int) * 3 + P_KEY_LENGTH;
 	ct_len=msg_len+EVP_CIPHER_CTX_block_size(this->ctx);
-	chipertext=(char*)malloc(ct_len);
-
-	select_random_key(sym_key, EVP_MAX_KEY_LENGTH);
+	ciphertext=(unsigned char*)malloc(ct_len);
 	
-	EVP_Encrypt_Init(this->ctx, EVP_des_ecb(), sym_key, NULL);
+	EVP_EncryptInit(this->ctx, EVP_des_ecb(), sym_key, NULL);
 	
-	EVP_EncryptUpdate(this->ctx, &chipertext[ct_ptr], &nc, (unsigned char*)src, sizeof(int));
+	EVP_EncryptUpdate(this->ctx, &ciphertext[ct_ptr], &nc, (unsigned char*)src, sizeof(int));
 	ct_ptr+=nc;
 		
-	EVP_EncryptUpdate(this->ctx, &chipertext[ct_ptr], &nc, (unsigned char*)dst, sizeof(int));
+	EVP_EncryptUpdate(this->ctx, &ciphertext[ct_ptr], &nc, (unsigned char*)dst, sizeof(int));
 	ct_ptr+=nc;
 	
-	EVP_EncryptUpdate(this->ctx, &chipertext[ct_ptr], &nc, (unsigned char *)nonce, sizeof(int));
+	EVP_EncryptUpdate(this->ctx, &ciphertext[ct_ptr], &nc, (unsigned char *)nonce, sizeof(int));
 	ct_ptr+=nc;
 	
-	EVP_EncryptUpdate(this->ctx, &chipertext[ct_ptr], &nc, (unsigned char *)key, strlen(key));
+	EVP_EncryptUpdate(this->ctx, &ciphertext[ct_ptr], &nc, asym_key, strlen((const char*)asym_key));
 	ct_ptr+=nc;
 	
 	if (ct_ptr!=msg_len)
@@ -50,21 +47,48 @@ char* Sym_Encryption::sym_encrypt(int src, int dst, int nonce, const char* key){
 		
 	EVP_EncryptFinal(this->ctx, &ciphertext[ct_ptr], &nc);
 	
-	printf("Ciphertext: %s\n", ciphertext);
+	printf("Ciphertext: ");
+	for (unsigned int i=0; i<strlen((const char*)ciphertext); i++)
+		printbyte(ciphertext[i]);
 	
+	printf("\n");
+	///la free??????
 	return ciphertext;
 }
 
-void Sym_Encryption::sym_decrypt(const char* ciphertext, int src, int dst, int nonce, char* key){
-	char* plaintext;
+void Sym_Encryption::sym_decrypt(const unsigned char* sym_key, const unsigned char* ciphertext, int* src, int* dst, int* nonce, unsigned char* asym_key){
+	unsigned char* plaintext;
 	int msg_len;
+	int nd;			//numero byte effettivamente decifrati
+	int pt_ptr=0;
 	
 	msg_len = sizeof(int) * 3 + P_KEY_LENGTH;
-	plaintext=(char*)malloc(msg_len);
-	bzero(plaintext, ct_len);
+	plaintext=(unsigned char*)malloc(msg_len);
+	bzero(plaintext, msg_len);
 	
+	EVP_DecryptInit(ctx, EVP_des_ecb(), sym_key, NULL);
 	
-	
+	EVP_DecryptUpdate(this->ctx, plaintext, &nd, ciphertext, strlen((const char*)ciphertext));
 
+	if(nd!=(int)strlen((const char*)ciphertext))
+		sys_err("Symmetric decryption error!");
+	
+	EVP_DecryptFinal(this->ctx, plaintext, &nd);
+	
+	printf("Plaintext: %s\n", plaintext);
+	
+	memcpy((void*)src, (const void*)plaintext[pt_ptr], sizeof(int));
+	pt_ptr+=sizeof(int);
+	
+	memcpy((void*)dst, (const void*)plaintext[pt_ptr], sizeof(int));
+	pt_ptr+=sizeof(int);
+	
+	memcpy((void*)nonce, (const void*)plaintext[pt_ptr], sizeof(int));
+	pt_ptr+=sizeof(int);
+		
+	memcpy((void*)asym_key, (const void*)plaintext[pt_ptr], P_KEY_LENGTH);
+	
+	free(plaintext);
+	
 	return;
 }

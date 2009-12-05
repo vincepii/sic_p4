@@ -22,6 +22,11 @@
 
 using namespace std;
 
+/** @def P_KEY_LENGTH
+ * Public key length.
+ * */
+#define P_KEY_LENGTH 64
+
 /** @def BACKLOG
  * Backlog queue for listen() function.
  * */
@@ -72,6 +77,6 @@ int safe_read(int sd, void *arg, int len);
 
 void printbyte (char b);
 
-void select_random_key (unsigned char* k, int b);
+void select_random_key (char* k, int b);
 
 #endif

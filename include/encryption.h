@@ -27,10 +27,10 @@ class Sym_Encryption{
 		~Sym_Encryption();
 		
 		//encryption between a peer and kdc
-		char* sym_encrypt(int, int, int, const char*);
+		unsigned char* sym_encrypt(const unsigned char*, int, int, int, const unsigned char*);
 		
 		//decryption beetween a peer and kdc
-		void sym_decrypt(const char*, int, int, int, char*);
+		void sym_decrypt(const unsigned char*, const unsigned char*, int*, int*, int*, unsigned char*);
 
 };
 
