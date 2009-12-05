@@ -16,5 +16,5 @@ clean:
 	cd bpeer && make clean
 	cd include && make clean
 	rm -f *~
-	cd $(TESTCOM) && rm -f *.o *~
-	cd $(TESTSYM) && rm -f *.o *~
+	cd $(TESTCOM) && rm -f *.o *~ apeer kdc
+	cd $(TESTSYM) && rm -f *.o *~ peer

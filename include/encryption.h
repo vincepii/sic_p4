@@ -1,7 +1,4 @@
 #include "utilities.h"
-//#include <openssl/evp.h>
-//#include <openssl/rand.h>
-
 
 /** @file encryption.h
  * File containing encryption/decryption functions and data structures.
@@ -27,9 +24,15 @@ class Sym_Encryption{
 		~Sym_Encryption();
 		
 		//encryption between a peer and kdc
+		/**
+		 * chiave simmetrica, ids e nonce, chiave asimm
+		 */
 		unsigned char* sym_encrypt(const unsigned char*, int, int, int, const unsigned char*);
 		
 		//decryption beetween a peer and kdc
+		/*
+		 * Chiave, cipher, parametri out (ids, nonce, chiave)
+		 */
 		void sym_decrypt(const unsigned char*, const unsigned char*, int*, int*, int*, unsigned char*);
 
 };
