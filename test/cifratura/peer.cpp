@@ -21,23 +21,28 @@ int main(){
 	Sym_Encryption encr_obj;
 	
 	cipher=encr_obj.sym_encrypt(sym_key, src, dst, nonce, (unsigned char*)asym_key);
-	printf("funge\n");
+
 	encr_obj.~Sym_Encryption();
-/*
-	printf("cifrato: %s\n", cipher);
+		
+
+	printf("cifrato: \n");
+	for (unsigned int i=0; i<strlen((const char*)cipher); i++)
+		printbyte(cipher[i]);
+
+	printf("\n");
 	
 	//decifra e stampa il decifrato
 	src=0; dst=0; nonce=0; 	//inizializzo variabili perchè poi ci va il decifrato
 	
 	Sym_Encryption decr_obj;
 	decr_obj.sym_decrypt(sym_key, cipher, &src, &dst, &nonce, (unsigned char*)asym_key);
-	decr_obj.~Sym_Encryption();
+	//decr_obj.~Sym_Encryption();
 
 	printf("testo decifrato: \n");
 	printf("src: %d\n", src);
 	printf("dst: %d\n", dst);
 	printf("nonce: %d\n", nonce);
 	printf("asym_key: %s\n", asym_key);
-	*/
+	
 	return 0;
 }
