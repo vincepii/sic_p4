@@ -30,16 +30,25 @@ unsigned char* Sym_Encryption::sym_encrypt(const unsigned char* sym_key,
 	//int intTostr_len=0;
 	
 	//conversione interi in caratteri
-	string s;
+	/*string s;
 	stringstream out;
 	out << src;
 	out << dst;
 	out << nonce;
 	out << asym_key;
 	s = out.str();
-	msg_len=strlen((const char*)s.c_str());
+	msg_len=strlen((const char*)s.c_str());*/
 
-//	msg_len = intTostr_len + P_KEY_LENGTH;
+	msg_len = 3* sizeof(int) + P_KEY_LENGTH;
+	int pt_ptr=0;
+	unsigned char* plaintext=(unsigned char*)malloc(msg_len);
+	memcpy(&plaintext[pt_ptr], &src, sizeof(int));
+	pt_ptr+=sizeof(int);
+	memcpy(&plaintext[pt_ptr], &dst, sizeof(int));
+	pt_ptr+=sizeof(int);
+	memcpy(&plaintext[pt_ptr], &nonce, sizeof(int));
+	pt_ptr+=sizeof(int);
+	memcpy(&plaintext[pt_ptr], asym_key, P_KEY_LENGTH);
 
 	EVP_EncryptInit(this->ctx, EVP_des_ecb(), sym_key, NULL);
 
@@ -48,8 +57,8 @@ unsigned char* Sym_Encryption::sym_encrypt(const unsigned char* sym_key,
 
 	
 	
-cout<<endl<<"prova valore 1: "<<s<<"."<<endl;
-	EVP_EncryptUpdate(this->ctx, &ciphertext[ct_ptr], &nc, (unsigned char *)s.c_str(), msg_len);
+//cout<<endl<<"prova valore 1: "<<s<<"."<<endl;
+	EVP_EncryptUpdate(this->ctx, &ciphertext[ct_ptr], &nc, plaintext, msg_len);
 	ct_ptr+=nc;
 
 /*	out << dst;
@@ -93,13 +102,18 @@ void Sym_Encryption::sym_decrypt(const unsigned char* sym_key, const unsigned ch
 	int pt_ptr=0;	/*puntatore alla posizione di plaintext 
 					nella quale inserire i nuovi dati decifrati*/
 	
+	printf("cifrato a destinazione: \n");
+	for (unsigned int i=0; i<strlen((const char*)ciphertext); i++)
+		printbyte(ciphertext[i]);
+	printf("\n");
+	
 	msg_len = strlen((const char*)ciphertext);
 	plaintext=(unsigned char*)malloc(msg_len);
 	bzero(plaintext, msg_len);
 	
 	EVP_DecryptInit(this->ctx, EVP_des_ecb(), sym_key, NULL);
 	
-	EVP_DecryptUpdate(this->ctx, &plaintext[pt_ptr], &nd, ciphertext, strlen((const char*)ciphertext));
+	EVP_DecryptUpdate(this->ctx, plaintext, &nd, ciphertext, msg_len);
 	pt_ptr+=nd;
 
 	//if(nd!=(int)strlen((const char*)ciphertext))
@@ -109,27 +123,23 @@ void Sym_Encryption::sym_decrypt(const unsigned char* sym_key, const unsigned ch
 	pt_ptr+=nd;
 	printf("pt_ptr: %d\n", pt_ptr);
 	
-	
-	printf("PPlaintext: %s\n", plaintext);
-	printf("PPlaintext senza padding: ");
-	for (int i=0; i<pt_ptr; i++)
-		cout<<plaintext[i];
-	printf("\n");
-	
+
 	pt_ptr=0;	//reinizializzo per lettura numero byte giusti dei vari campi
 	
+	int a,b,c; unsigned char d[P_KEY_LENGTH];
 	
-	memcpy((void*)src, (const void*)plaintext[pt_ptr], sizeof(int));
-	printf("ora si\n");
+	memcpy(&a, &plaintext[pt_ptr], sizeof(int));
+	*src=a;
 	pt_ptr+=sizeof(int);
-	
-	memcpy((void*)dst, (const void*)plaintext[pt_ptr], sizeof(int));
+	memcpy(&b, &plaintext[pt_ptr], sizeof(int));
+	*dst=b;
 	pt_ptr+=sizeof(int);
-	
-	memcpy((void*)nonce, (const void*)plaintext[pt_ptr], sizeof(int));
+	memcpy(&c, &plaintext[pt_ptr], sizeof(int));
+	*nonce=c;
 	pt_ptr+=sizeof(int);
-		
-	memcpy((void*)asym_key, (const void*)plaintext[pt_ptr], P_KEY_LENGTH);
+	memcpy(d, &plaintext[pt_ptr], P_KEY_LENGTH);
+//	printf("d: %s\n",d);
+	strncpy((char*)asym_key, (const char*)d, P_KEY_LENGTH);
 	
 	free(plaintext);
 	

@@ -23,7 +23,7 @@
 using namespace std;
 
 /** @def P_KEY_LENGTH
- * Public key length.
+ * Public key length in bytes.
  * */
 #define P_KEY_LENGTH 64
 
