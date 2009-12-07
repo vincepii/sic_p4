@@ -96,10 +96,10 @@ void Mess::print_hex()
 	cout <<endl;
 	cout << "SRC_ID: " << src_id << endl;
 	cout << "DEST_ID: " << dest_id << endl;
-    cout << "Nonce: " << nonce << endl;
-    cout << "Cipher Length: " << cipher_ll << endl;
-    cout <<endl<< "Message: "<<endl;
-    for (int i=0; i<cipher_ll; i++)
-                printbyte(cipher[i]);
-    cout<<endl;
+	cout << "Nonce: " << nonce << endl;
+	cout << "Cipher Length: " << cipher_ll << endl;
+	cout <<endl<< "Message: "<<endl;
+	for (int i=0; i<cipher_ll; i++)
+		printbyte(cipher[i]);
+	cout<<endl;
 }

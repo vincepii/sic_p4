@@ -58,13 +58,15 @@ private:
 	unsigned char* plain;
 public:
 	As_enc(string pubfile, string privfile);
-	int asym_enc(int src_id, int dst_id, int nonce1);
-	int asym_enc(int src_id, int dst_id, int nonce1, int nonce2);
-	int asym_dec(unsigned char* from, int number_of_int_carried);
+	int asym_encr(int src_id, int dst_id, int nonce1);
+	int asym_encr(int src_id, int dst_id, int nonce1, int nonce2);
+	int asym_decr(unsigned char* from, int cipher_ll);
 	/**
 	 * Legge gli interi contenuti nel plaintext decifrato
 	 */
 	void print_plain(int number_of_int_carried);
+	unsigned char* getCipher();
+	unsigned char* getPlain();
 	~As_enc();
 };
 
