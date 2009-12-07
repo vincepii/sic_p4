@@ -27,13 +27,13 @@ class Sym_Encryption{
 		/**
 		 * chiave simmetrica, ids e nonce, chiave asimm
 		 */
-		unsigned char* sym_encrypt(const unsigned char*, int, int, int, const unsigned char*);
+		string sym_encrypt(const unsigned char*, int, int, int, const unsigned char*);
 		
 		//decryption beetween a peer and kdc
 		/*
 		 * Chiave, cipher, parametri out (ids, nonce, chiave)
 		 */
-		void sym_decrypt(const unsigned char*, const unsigned char*, int*, int*, int*, unsigned char*);
+		void sym_decrypt(const unsigned char*, const string, int*, int*, int*, string&);
 
 };
 
