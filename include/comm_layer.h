@@ -18,6 +18,11 @@ class Mess {
 		void send_mes(int socket);
 		int receive_mes(int socket);
 		void print();
+		unsigned char* getCipher();
+		int getCipher_ll();
+		int getDest_id();
+		int getNonce();
+		int getSrc_id();
 		~Mess(){ delete[] this->cipher; };
 };
 
