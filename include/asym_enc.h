@@ -1,6 +1,7 @@
 #include "utilities.h"
 #include <openssl/rsa.h>
 #include <openssl/pem.h>
+#include <fstream>
 
 #ifndef __ASYM_ENC_H__
 #define __ASYM_ENC_H__
@@ -37,15 +38,27 @@
  * Generazione della chiave pubblica dalla chiave privata:
  * $ openssl rsa -in privkey.pem -pubout -out pubkey.pem
  *
- * Usare RSA *PEM_read_RSAPrivateKey e EVP_PKEY *PEM_read_PUBKEY per prelevare
+ * Usare RSA *PEM_read_RSAPrivateKey e EVP_PKEY *PEM_read_RSAPublicKey per prelevare
  * le chiavi da file e compilare l'oggetto RSA
+ *
+ * man rsa
+ * man 3 rsa
+ *
  * */
+
+#define A_PUB_FILE "../apeer/pubkey.pem"
+#define B_PUB_FILE "../bpeer/pubkey.pem"
+#define A_PRI_FILE "../apeer/privkey.pem"
+#define B_PRI_FILE "../bpeer/privkey.pem"
 
 class As_enc {
 private:
-	RSA rsa_obj;
+	RSA* rsa_obj;
 public:
 	As_enc();
+	string asym_enc(int src_id, int dst_id, int nonce1, int nonce2 = 0);
+
+	~As_enc(){ RSA_free(rsa_obj); }
 };
 
 #endif

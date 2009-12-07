@@ -65,3 +65,41 @@ void Mess::print()
 	cout << "Cipher Length: " << cipher_ll << endl;
 	cout << "Message: " << cipher << endl;
 }
+
+unsigned char* Mess::getCipher()
+{
+	return cipher;
+}
+
+int Mess::getCipher_ll()
+{
+	return cipher_ll;
+}
+
+int Mess::getDest_id()
+{
+	return dest_id;
+}
+
+int Mess::getNonce()
+{
+	return nonce;
+}
+
+int Mess::getSrc_id()
+{
+	return src_id;
+}
+
+void Mess::print_hex()
+{
+	cout <<endl;
+	cout << "SRC_ID: " << src_id << endl;
+	cout << "DEST_ID: " << dest_id << endl;
+    cout << "Nonce: " << nonce << endl;
+    cout << "Cipher Length: " << cipher_ll << endl;
+    cout <<endl<< "Message: "<<endl;
+    for (int i=0; i<cipher_ll; i++)
+                printbyte(cipher[i]);
+    cout<<endl;
+}
