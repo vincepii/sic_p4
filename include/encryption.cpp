@@ -108,7 +108,7 @@ void Sym_Encryption::sym_decrypt(const unsigned char* sym_key, const string ciph
 	
 	asym_key.insert(0, (char*)&plaintext[pt_ptr], P_KEY_LENGTH);
 	
-	//free(plaintext);
+	free(plaintext);
 	
 	return;
 }
