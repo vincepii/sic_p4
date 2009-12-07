@@ -39,6 +39,10 @@
  *
  * Usare RSA *PEM_read_RSAPrivateKey e EVP_PKEY *PEM_read_PUBKEY per prelevare
  * le chiavi da file e compilare l'oggetto RSA
+ *
+ * man rsa
+ * man 3 rsa
+ *
  * */
 
 class As_enc {
@@ -46,6 +50,7 @@ private:
 	RSA rsa_obj;
 public:
 	As_enc();
+	string asym_enc(int src_id, int dst_id, char nonce1, char nonce2 = 0);
 };
 
 #endif
