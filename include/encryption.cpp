@@ -114,7 +114,7 @@ printf("msg_len: %d --- ct_len: %d --- pt_ptr: %d\n", msg_len, ciphertext.length
 
 //---
 
-/*	pt_ptr=0;	//reinizializzo per lettura numero byte giusti dei vari campi
+	pt_ptr=0;	//reinizializzo per lettura numero byte giusti dei vari campi
 	
 	memcpy(src, &plaintext[pt_ptr], sizeof(int));
 	pt_ptr+=sizeof(int);
@@ -125,7 +125,7 @@ printf("msg_len: %d --- ct_len: %d --- pt_ptr: %d\n", msg_len, ciphertext.length
 	memcpy(nonce, &plaintext[pt_ptr], sizeof(int));
 	pt_ptr+=sizeof(int);
 	
-	asym_key.insert(0, (char*)&plaintext[pt_ptr], P_KEY_LENGTH);*/
+	asym_key.insert(0, (char*)&plaintext[pt_ptr], P_KEY_LENGTH);
 	
 	//free(plaintext);
 	
