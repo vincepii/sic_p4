@@ -11,14 +11,19 @@ int main(){
 	//la chiave deve essere lunga sempre P_KEY_LENGTH, non di meno => altrimenti ho problemi di sicurezza
 	const char* asym_key="chiave541516pubblica615145da_inviare_la_dimensione_deve_essere__";
 	
+	printf("\ntesto da inviare:\n");	
 	printf("src: %d\n", src);
 	printf("dst: %d\n", dst);
 	printf("nonce: %d\n", nonce);
-	printf("asym_key: %s\n", asym_key);
+	printf("asym_key: %s\n\n", asym_key);
+	
+	printf("Chiave simmetrica usata:\n");
 	
 	//lo cifra e stampa il cifrato
 	unsigned char sym_key[EVP_MAX_KEY_LENGTH];
 	select_random_key(sym_key, EVP_MAX_KEY_LENGTH);
+	
+	printf("\n");
 	
 	Sym_Encryption encr_obj;
 	
@@ -34,7 +39,7 @@ int main(){
 	decr_obj.sym_decrypt(sym_key, cipher, &src, &dst, &nonce, AK);
 	decr_obj.~Sym_Encryption();
 
-	printf("testo decifrato: \n");
+	printf("\n\ntesto decifrato: \n");
 	printf("src: %d\n", src);
 	printf("dst: %d\n", dst);
 	printf("nonce: %d\n", nonce);

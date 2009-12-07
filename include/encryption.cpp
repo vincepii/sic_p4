@@ -14,7 +14,6 @@ Sym_Encryption::~Sym_Encryption()
 {
 	if (EVP_CIPHER_CTX_cleanup(this->ctx)==0)
 		sys_err("Context deallocation error!");
-	printf("in distr\n");
 	return;
 }
 
@@ -30,10 +29,12 @@ string Sym_Encryption::sym_encrypt(const unsigned char* sym_key,
 	int pt_ptr=0;	/*puntatore alla posizione di plaintext 
 					nella quale inserire i nuovi dati da cifrare*/
 	unsigned char* plaintext;
-	string s;
+	
+	//per convertire il ciphertext in una stringa
+	string s_cipher;
 
 	//assegno una zona di memoria al plaintext e lo riempo con i dati che lo compongono
-	msg_len = 3* sizeof(int) + P_KEY_LENGTH;
+	msg_len = 3* sizeof(int) + P_KEY_LENGTH+1;
 	plaintext=(unsigned char*)malloc(msg_len);
 	
 	memcpy(&plaintext[pt_ptr], &src, sizeof(int));
@@ -58,23 +59,15 @@ string Sym_Encryption::sym_encrypt(const unsigned char* sym_key,
 	EVP_EncryptFinal(this->ctx, &ciphertext[ct_ptr], &nc);
 	ct_ptr+=nc;
 	
-	s.insert(0,	(char*)ciphertext, ct_ptr);
-	printf("dime s: %d\n\n",s.length());
+	s_cipher.insert(0,	(char*)ciphertext, ct_ptr);
 	
-printf("msg_len: %d --- ct_len: %d --- ct_ptr: %d\n", msg_len, ct_len, ct_ptr);
-	//********* tolta perchè da sempre qualcosa in meno della dim max. A meno che non becchi il caso
-	//********* in cui sono proprio identici. Quindi da sempre errore anche se non c'è!!
-	/*
-	printf("ct_ptr: %d, ct_len: %d\n", ct_ptr, ct_len);
-	if (ct_ptr!=ct_len)
-		sys_err("Symmetric encryption error!");*/
-	
-	printf("CCiphertext: \n");
-	for (unsigned int i=0; i<s.length(); i++)
-		printbyte(s.at(i));
+	printf("Ciphertext: \n");
+	for (unsigned int i=0; i<s_cipher.length(); i++)
+		printbyte(s_cipher.at(i));
+
 	free(plaintext);
-	///la free??????
-	return s;
+	///la free del ciphertext??????
+	return s_cipher;
 }
 
 void Sym_Encryption::sym_decrypt(const unsigned char* sym_key, const string ciphertext, 
@@ -87,35 +80,23 @@ void Sym_Encryption::sym_decrypt(const unsigned char* sym_key, const string ciph
 	int pt_ptr=0;	/*puntatore alla posizione di plaintext 
 					nella quale inserire i nuovi dati decifrati*/
 	
-	printf("cifrato a destinazione: \n");
-	for (unsigned int i=0; i<ciphertext.length(); i++)
-		printbyte(ciphertext.at(i));
-	printf("\n CON ct_len: %d\n",ciphertext.length());
-
-//-----
-	msg_len = 3* sizeof(int) + P_KEY_LENGTH;
+	//assegno una zona di memoria al plaintext
+	msg_len = 3* sizeof(int) + P_KEY_LENGTH+1;
 	plaintext=(unsigned char*)malloc(msg_len);
 	bzero(plaintext, msg_len);
 	
-	unsigned char apg[ciphertext.length()];
-	memcpy(apg, ciphertext.c_str(),ciphertext.length());
-	//for (unsigned int i=0; i<ciphertext.length(); i++)
-	//	printbyte(apg[i]);
-	
+	//decifro
 	EVP_DecryptInit(this->ctx, EVP_des_ecb(), sym_key, NULL);
 	
 	pt_ptr=0;
-	EVP_DecryptUpdate(this->ctx, &plaintext[pt_ptr], &nd, apg, ciphertext.length());
+	EVP_DecryptUpdate(this->ctx, &plaintext[pt_ptr], &nd, (unsigned char*)ciphertext.c_str(), ciphertext.length());
 	pt_ptr+=nd;
 	
 	EVP_DecryptFinal(this->ctx, &plaintext[pt_ptr], &nd);
 	pt_ptr+=nd;
-printf("msg_len: %d --- ct_len: %d --- pt_ptr: %d\n", msg_len, ciphertext.length(), pt_ptr);
 
-//---
 
-	pt_ptr=0;	//reinizializzo per lettura numero byte giusti dei vari campi
-	
+	pt_ptr=0;	//reinizializzo per lettura numero byte giusti dei vari campi	
 	memcpy(src, &plaintext[pt_ptr], sizeof(int));
 	pt_ptr+=sizeof(int);
 	
