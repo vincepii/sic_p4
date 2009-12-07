@@ -23,6 +23,7 @@ class Mess {
 		int getDest_id();
 		int getNonce();
 		int getSrc_id();
+		void print_hex();
 		~Mess(){ delete[] this->cipher; };
 };
 
