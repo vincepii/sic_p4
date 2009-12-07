@@ -45,11 +45,13 @@ int main (int argc, char* argv[])
 	printf("nonce: %d\n", nonce);
 	printf("asym_key: %s\n\n", asym_key);
 	
-	printf("Chiave simmetrica usata:\n");
+	printf("Per effettuare la prova è stata usata una chiave fissa (per semplicità nell'uso della stessa per kdc e apeer\n");
 	
 	//lo cifra e stampa il cifrato
 	unsigned char sym_key[EVP_MAX_KEY_LENGTH];
-	select_random_key(sym_key, EVP_MAX_KEY_LENGTH);
+	//select_random_key(sym_key, EVP_MAX_KEY_LENGTH);
+	for (int i=0; i<EVP_MAX_KEY_LENGTH; i++)
+		memcpy(&sym_key[i], "A", 1);
 	
 	printf("\n");
 	
