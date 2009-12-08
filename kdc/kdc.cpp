@@ -119,7 +119,6 @@ void* body(void* arg){
 	M3_M5.send_mes(sd);
 	M3_M5.print_hex();
 	
-	
 	/**
 	 * Operazioni KDC:
 	 * 1. Riceve M2 (o M4)
@@ -166,3 +165,4 @@ int main(int argc, char* argv[]){
 	}
 	return 0;
 }
+
