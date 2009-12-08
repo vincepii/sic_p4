@@ -2,15 +2,19 @@
 #include "../include/comm_layer.h"
 #include "../include/asym_enc.h"
 #include "../include/encryption.h"
+#include <fstream>
 
 using namespace std;
 
 #define B_ID 2
+#define SYM_KEY_FILE "KAT"
+#define PRIV_KEY_FILE "privkey.pem"
+#define A_PUB_KEY_FILE "A_pubkey.pem"
 
 int main (int argc, char* argv[])
 {
 	//-------------------------------------------------------------------------
-	//PREPARAZIONE SOCKET PER COLLEGAMENTO A KDC
+	//PREPARAZIONE SOCKET PER COLLEGAMENTO CON KDC
 
 	struct sockaddr_in addr;
 	int server_port;
@@ -33,7 +37,7 @@ int main (int argc, char* argv[])
 		sys_err("CL: connection error");
 
 	//-------------------------------------------------------------------------
-	//PREPARAZIONE SOCKET PER RICEVERE DA A
+	//PREPARAZIONE SOCKET PER COLLEGAMENTO CON A
 
 	int port;
 
@@ -66,8 +70,20 @@ int main (int argc, char* argv[])
 	int Nb = 0;
 	int check1 = 0;
 	int check2 = 0;
-	unsigned char* cipher;
+	int check3 = 0;
+	int check4 = 0;
+	string cipher;
+	string sym_key;
+	string A_asym_key;
+	ifstream kfile;
+	ofstream as_k_file;
+	unsigned char* as_cipher;
+	int as_cipher_ll = 0;
+	unsigned char* as_plain;
+	int as_a_nonce = 0;
+	int as_b_nonce = 0;
 
+	//ricezione di M1 e controllo sul mio id
 	Mess M1(0,0,0,0,0);
 	M1.receive_mes(curr_sd);
 	A = M1.getSrc_id();
@@ -76,23 +92,125 @@ int main (int argc, char* argv[])
 	if (B != B_ID){
 		// A non vuole comunicare con me
 		cout << "[B]: ricevuto M1 con dest_id " << B << endl;
-		return 0;
+		return -1;
 	}
 
+	//creazione ed invio del messaggio M4
 	Nb = rand();
-	Mess M4(B, A, Nb);
+	Mess M4(B_ID, A, Nb);
 	M4.send_mes(kdc_socket);
 
+	//ricezione del messaggio M5 e controlli sugli id
 	Mess M5(0,0,0,0,0);
 	M5.receive_mes(kdc_socket);
 	check1 = M5.getSrc_id();
 	check2 = M5.getDest_id();
 
-	if (check1 != B || check2 != A){
-		cout << "[B]: ricevuto M2 con src_id " << B << "e dest_id" << A << endl;
-		return 0;
+	if (check1 != B_ID || check2 != A){
+		cout << "[B]: ricevuto M2 con src_id " << check1 << " e dest_"
+				"id" << check2 << endl;
+		return -1;
 	}
-	cipher = M5.getCipher();
+
+	//recupero del ciphertext e della chiave simmetrica da file (M5)
+	cipher.assign((const char*)M5.getCipher());
+
+	kfile.open(SYM_KEY_FILE, ios::in | ios::binary);
+	if (!kfile.is_open())
+		user_err ("Sym key file not found");
+	getline(kfile, sym_key);
+	kfile.close();
+
+	//decifratura del ciphertext (M5)
+	Sym_Encryption S5;
+	S5.sym_decrypt((const unsigned char*)sym_key.c_str(), cipher, &check1,
+			&check2, &check3, A_asym_key);
+
+	if (check1 != B_ID || check2 != A || check3 != Nb){
+		cout << "[B]: ciphertext di M5 con src_id " << check1 << " dest_"
+				"id " << check2 << " nonce " << check3 << endl;
+		return -1;
+	}
+
+	//considero la chiave pubblica di A valida, scrivo il file .pem
+	as_k_file.open(A_PUB_KEY_FILE, ios::out | ios::binary);
+	if (!as_k_file.is_open()) sys_err ("Unable to create asym key file");
+	as_k_file.write(A_asym_key.c_str(), A_asym_key.length());
+	as_k_file.close();
+
+	//Ricezione di M6 e controlli sugli ID
+	Mess M6(0,0,0,0,0);
+	M6.receive_mes(curr_sd);
+	check1 = M6.getSrc_id();
+	check2 = M6.getDest_id();
+	as_cipher = M6.getCipher();
+	as_cipher_ll = M6.getCipher_ll();
+
+	if (check1 != A || check2 != B_ID){
+		cout << "[B]: ricevuto M6 con src_id " << check1 << " e dest_id " <<
+				check2 << endl;
+		return -1;
+	}
+
+	//Decifratura del crittogramma contenuto in M6 e controllo sugli ID
+	As_enc ae_M6("", PRIV_KEY_FILE);
+	ae_M6.asym_decr(as_cipher, as_cipher_ll);
+	as_plain = ae_M6.getPlain();
+	check1 = as_plain[0];
+	check2 = as_plain[1 * sizeof(int)];
+	as_a_nonce = as_plain[2 * sizeof(int)];
+
+	if (check1 != A || check2 != B_ID){
+		cout << "[B]: ciphertext di M6 con src_id " << check1 << " dest_"
+				"id " << check2 << endl;
+		return -1;
+	}
+
+	//Creazione del crittogramma da inviare in M7
+	as_b_nonce = rand();
+	As_enc ae_M7(A_PUB_KEY_FILE, "");
+	ae_M7.asym_encr(B_ID, A, as_a_nonce, as_b_nonce);
+	as_cipher_ll = strlen((const char *)ae_M7.getCipher());
+
+	//Creazione ed invio del messaggio M7
+	Mess M7(B_ID, A, 0, ae_M7.getCipher(), as_cipher_ll);
+	M7.send_mes(curr_sd);
+
+	//Ricezione di M8 e controlli
+	Mess M8(0,0,0,0,0);
+	M8.receive_mes(curr_sd);
+	check1 = M8.getSrc_id();
+	check2 = M8.getDest_id();
+
+	if (check1 != A || check2 != B_ID){
+		cout << "[B]: ricevuto M8 con src_id " << check1 << " e dest_id " <<
+				check2 << endl;
+		return -1;
+	}
+
+	//decifratura del cipher di M8
+	as_cipher = M8.getCipher();
+	as_cipher_ll = M8.getCipher_ll();
+
+	As_enc ae_M8("", PRIV_KEY_FILE);
+	ae_M8.asym_decr(as_cipher, as_cipher_ll);
+	as_plain = ae_M8.getPlain();
+	check1 = as_plain[0];
+	check2 = as_plain[sizeof(int)];
+	check3 = as_plain[2 * sizeof(int)];
+	check4 = as_plain[3 * sizeof(int)];
+
+	if (check1 != A || check2 !=B_ID ||
+			check3 != as_b_nonce || check4 != as_a_nonce){
+		cout << "[B]: ciphertext di M8 con src_id " << check1;
+		cout << " dest_id " << check2 << " Nb " << check3;
+		cout << " Na " << check4 << endl;
+		return -1;
+	}
+
+	//calcolare la chiave di sessione usando as_a_nonce e as_b_nonce
+
+	cout << "Protocollo completato, chiave di sessione stabilita" << endl;
 
 	return 0;
 }
