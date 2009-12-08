@@ -7,7 +7,7 @@
 using namespace std;
 
 #define B_ID 2
-#define SYM_KEY_FILE "KAT"
+#define SYM_KEY_FILE "KBT"
 #define PRIV_KEY_FILE "privkey.pem"
 #define A_PUB_KEY_FILE "A_pubkey.pem"
 
@@ -203,8 +203,8 @@ int main (int argc, char* argv[])
 	if (check1 != A || check2 !=B_ID ||
 			check3 != as_b_nonce || check4 != as_a_nonce){
 		cout << "[B]: ciphertext di M8 con src_id " << check1;
-		cout << " dest_id " << check2 << " Nb " << check3;
-		cout << " Na " << check4 << endl;
+		cout << " dest_id " << check2 << " Yb " << check3;
+		cout << " Ya " << check4 << endl;
 		return -1;
 	}
 

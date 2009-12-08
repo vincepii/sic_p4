@@ -54,7 +54,7 @@ void* body(void* arg){
 	int sd = (int) arg;
 	int src, dst, nonce;
 
-<<<<<<< HEAD:kdc/kdc.cpp
+
 	//ricezione messaggio (sono del tipo A, B, Na)
 	Mess m1(0,0,0,0,0);
 	m1.receive_mes(sd);
@@ -68,7 +68,7 @@ void* body(void* arg){
 	//ricava dal KeyRepository la chiave condivisa con A
 	
 
-=======
+
 	/**
 	 * Operazioni KDC:
 	 * 1. Riceve M2 (o M4)
@@ -78,7 +78,7 @@ void* body(void* arg){
 	 * 5. Usa la chiave simmetrica letta al punto 2 per cifrare
 	 * 6. Invia il messaggio di risposta
 	 */
->>>>>>> 1e49fca438adc11dd1173e05186fbc3fefa8addb:kdc/kdc.cpp
+
 
 	//thread pronto a gestire la comunicazione sul socket sd
 	//segue pseudocodice:
@@ -116,3 +116,4 @@ int main(int argc, char* argv[]){
 	}
 	return 0;
 }
+
