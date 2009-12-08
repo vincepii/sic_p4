@@ -12,7 +12,7 @@ int main (int argc, char* argv[])
 	int sd;
 	string server_ip;
 
-	if (argc < 2) user_err("usage: client <server_ip> <server_port>");
+	if (argc < 2) user_err("usage: apeer <server_ip> <server_port>");
 
 	server_ip = argv[1];
 	server_port = atoi(argv[2]);
@@ -29,10 +29,11 @@ int main (int argc, char* argv[])
 
 	//-------------------------------------------------------------------------
 
-	//Creazione ed invio di un messaggio
-	const char* mp = "Messaggio di prova";
-	Mess mes(25, 10, 50, (unsigned char*)mp, strlen(mp));
-	mes.send_mes(sd);
+	/*
+	 * Operazioni del peer A:
+	 * 1. Invio di un messaggio a B per iniziare la richiesta della chiave pubblica
+	 * 2. Invio di un messaggio alla KDC
+	 */
 
 	return 0;
 }

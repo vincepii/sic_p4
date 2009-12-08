@@ -11,11 +11,15 @@ using namespace std;
 void* body(void* arg){
 	int sd = (int) arg;
 
-	//ricezione messaggio
-	Mess m1(0,0,0,0,0);
-	m1.receive_mes(sd);
-	m1.print();
-
+	/**
+	 * Operazioni KDC:
+	 * 1. Riceve M2 (o M4)
+	 * 2. Legge il primo id e recupera la chiave simmetrica corrispondente
+	 * 3. Legge il secondo id e recupera la chiave pubblica corrispondente
+	 * 4. Legge il nonce che dovrà usare in M3 ( o M5)
+	 * 5. Usa la chiave simmetrica letta al punto 2 per cifrare
+	 * 6. Invia il messaggio di risposta
+	 */
 
 	//thread pronto a gestire la comunicazione sul socket sd
 	//segue pseudocodice:

@@ -65,8 +65,6 @@ int As_enc::asym_encr(int src_id, int dst_id, int nonce1, int nonce2)
 	if (pubkey == NULL) sys_err("Cannot create RSA object with public key");
 	fclose(pubk_file);
 
-	//chiave pubblica pronta per la cifratura
-
 	dim = 4 * sizeof(int);
 
 	from = new unsigned char[dim];
