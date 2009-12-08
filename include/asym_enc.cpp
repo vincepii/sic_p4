@@ -24,6 +24,7 @@ int As_enc::asym_encr(int src_id, int dst_id, int nonce1)
 	if (pubk_file == NULL) sys_err("Cannot find public key file");
 	pubkey = PEM_read_RSA_PUBKEY(pubk_file, NULL, NULL, NULL);
 	if (pubkey == NULL) sys_err("Cannot create RSA object with public key");
+	fclose(pubk_file);
 
 	//chiave pubblica pronta per la cifratura
 
@@ -63,8 +64,6 @@ int As_enc::asym_encr(int src_id, int dst_id, int nonce1, int nonce2)
 	pubkey = PEM_read_RSA_PUBKEY(pubk_file, NULL, NULL, NULL);
 	if (pubkey == NULL) sys_err("Cannot create RSA object with public key");
 	fclose(pubk_file);
-
-	//chiave pubblica pronta per la cifratura
 
 	dim = 4 * sizeof(int);
 
