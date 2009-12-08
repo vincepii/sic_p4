@@ -19,6 +19,7 @@
 #include <string>
 #include <openssl/evp.h>
 #include <openssl/rand.h>
+#include <fstream>
 
 using namespace std;
 
