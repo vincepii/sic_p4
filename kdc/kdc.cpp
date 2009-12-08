@@ -2,44 +2,78 @@
 //#include "../include/comm_layer.h"
 #include "kdc.h"
 
-
-void search_shared_key(int peer, string& sh_key){
-	//unsigned char sh_key[EVP_MAX_KEY_LENGTH];		//shared key
-	char peer_id[10];								/*caratteri che formano il peer_id
-													con 10 riesco a coprire il range di valori
-													per l'int (32 bit)*/
-	int actual_peer;								//peer letto dal file
-	fstream KRep;										//key repository file
-	
+bool search_public_key(int peer, string& pub_key){
+	unsigned char key[EVP_MAX_KEY_LENGTH];	//shared key
+	int actual_peer;						//peer letto dal file
+	unsigned char pk_file[1024];			/*path del file contenente la 
+											chiave pubblica del peer*/
+	FILE* KRep;								//Key Repository file
+	FILE* pub_file;							//file contenente la public key
+	unsigned char* buffer;					//contiene contenuto file publ key
+	int length;								//lunghezza file public key
 	
 	//apre il file
-	KRep.open("./KeyRepository", ios::in|ios::binary);
-
+	if (!(KRep = fopen("./KeyRepository", "r")))
+		sys_err("Non esiste alcun Key Repository!");
 	
 	//cerca l'entry associata al peer e legge la chiave condivisa da esso e dal KDC
-	
-	/*do{
-		int i=0;
-		while(KRep.fgets(peer_id[i], 10, KRep)){
-			if(peer_id[i]==';') break;
-			i++;	
-		}
-		peer_id[i]="\0";
-		actual_peer=atoi(peer_id);
-	}while(actual_peer!=peer);//passa alla prox riga*/
 	do{
-		KRep.getline(peer_id,10,';');
-		actual_peer=atoi(peer_id);
-		if(actual_peer==peer) break;
-		KRep.getline(
-	}while(1);
+		if(feof(KRep)) return false;
+		fscanf(KRep, "%d", &actual_peer);
+		fscanf(KRep, "%s", key);
+		fscanf(KRep, "%s", pk_file);
+	}while(actual_peer!=peer);
 	
-		
+	//estraggo la public key del peer
+	if(!(pub_file = fopen((const char*)pk_file, "r")))
+		sys_err("Non esiste alcun file contenente la chiave pubblica richiesta!");
 	
+	fseek (pub_file, 0, SEEK_END); 
+	buffer=(unsigned char*)malloc((length=ftell(pub_file)));
+	rewind(pub_file);
+	
+	fread (buffer, sizeof(unsigned char), length, pub_file); 
+	
+	//restituisce la chiave pubblica
+	pub_key.insert(0, (char*)buffer, length);
+	
+	fclose(pub_file);
+	
+	free(buffer);
+
 	//chiude il file
-	KRep.close();
+	fclose(KRep);
 	
-	return;
+	return true;
+}
+
+
+bool search_shared_key(int peer, string& sh_key){
+	unsigned char key[EVP_MAX_KEY_LENGTH];	//shared key
+	int actual_peer;						//peer letto dal file
+	unsigned char pk_file[1024];			/*path del file contenente la 
+											chiave pubblica del peer*/
+	FILE* KRep;								//Key Repository file
+	
+	//apre il file
+	if (!(KRep = fopen("./KeyRepository", "r")))
+		sys_err("Non esiste alcun Key Repository!");
+	
+	//cerca l'entry associata al peer e legge la chiave condivisa da esso e dal KDC
+	do{
+		if(feof(KRep)) return false;
+		fscanf(KRep, "%d", &actual_peer);
+		fscanf(KRep, "%s", key);
+		fscanf(KRep, "%s", pk_file);
+	}while(actual_peer!=peer);
+
+	//restituisci la chiave
+	sh_key.insert(0, (char*)key, EVP_MAX_KEY_LENGTH);
+
+	//chiude il file
+	fclose(KRep);
+	
+	return true;
 }
 
 
@@ -53,22 +87,39 @@ using namespace std;
 void* body(void* arg){
 	int sd = (int) arg;
 	int src, dst, nonce;
+	string shared_key;
+	string public_key;
+	string cipher;
 
-<<<<<<< HEAD:kdc/kdc.cpp
 	//ricezione messaggio (sono del tipo A, B, Na)
-	Mess m1(0,0,0,0,0);
-	m1.receive_mes(sd);
-	m1.print();
+	Mess M2_M4(0,0,0,0,0);
+	M2_M4.receive_mes(sd);
+	M2_M4.print();
 	
 	//estrae mittente, destinatario e nonce
-	src=m1.getSrc_id();
-	dst=m1.getDest_id();
-	nonce=m1.getNonce();
+	src=M2_M4.getSrc_id();
+	dst=M2_M4.getDest_id();
+	nonce=M2_M4.getNonce();
 	
 	//ricava dal KeyRepository la chiave condivisa con A
+	if(!search_shared_key(src, shared_key))
+		sys_err("Errore ricerca chiave condivisa tra peer e KDC!");
+		
+	//ricava dal KeyRepository la chiave pubblica di B
+	if(!search_shared_key(dst, public_key))
+		sys_err("Errore ricerca chiave pubblica di un peer!");
+		
+	//cifra un messaggio contenente A, B, Na, eB usando la shared_key	
+	Sym_Encryption encr_obj;
+	cipher=encr_obj.sym_encrypt((unsigned char*)shared_key.c_str(), src, dst, nonce, (unsigned char*)public_key.c_str());
+	encr_obj.~Sym_Encryption();
 	
-
-=======
+	//invia un messaggio contenente A, B e il cipher {A, B, Na, eB} cifrato con la shared_key
+	Mess M3_M5(src, dst, nonce, (unsigned char*)cipher.c_str(), cipher.length());
+	M3_M5.send_mes(sd);
+	M3_M5.print_hex();
+	
+	
 	/**
 	 * Operazioni KDC:
 	 * 1. Riceve M2 (o M4)
@@ -78,7 +129,6 @@ void* body(void* arg){
 	 * 5. Usa la chiave simmetrica letta al punto 2 per cifrare
 	 * 6. Invia il messaggio di risposta
 	 */
->>>>>>> 1e49fca438adc11dd1173e05186fbc3fefa8addb:kdc/kdc.cpp
 
 	//thread pronto a gestire la comunicazione sul socket sd
 	//segue pseudocodice:
