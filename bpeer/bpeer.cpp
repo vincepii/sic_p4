@@ -210,7 +210,7 @@ int main (int argc, char* argv[])
 
 	//calcolare la chiave di sessione usando as_a_nonce e as_b_nonce
 
-	cout << "Ya: " << as_a_nonce << " Yb: " << as_b_nonce << end;
+	cout << "Ya: " << as_a_nonce << " Yb: " << as_b_nonce << endl;
 
 	cout << "Protocollo completato, chiave di sessione stabilita" << endl;
 

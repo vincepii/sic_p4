@@ -166,7 +166,7 @@ int main (int argc, char* argv[])
 
 	//creazione della chiave di sessione usando as_a_nonce e as_b_nonce
 
-	cout << "Ya: " << as_a_nonce << " Yb: " << as_b_nonce << end;
+	cout << "Ya: " << as_a_nonce << " Yb: " << as_b_nonce << endl;
 
 	return 0;
 }
