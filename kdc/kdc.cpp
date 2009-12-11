@@ -2,6 +2,8 @@
 //#include "../include/comm_layer.h"
 #include "kdc.h"
 
+using namespace std;
+
 bool search_public_key(int peer, string& pub_key){
 	unsigned char key[EVP_MAX_KEY_LENGTH];	//shared key
 	int actual_peer;						//peer letto dal file
@@ -82,8 +84,6 @@ bool search_shared_key(int peer, string& sh_key){
  * thread gestore
  */
 
-using namespace std;
-
 void* body(void* arg){
 	int sd = (int) arg;
 	int src, dst, nonce;
@@ -115,7 +115,7 @@ void* body(void* arg){
 	encr_obj.~Sym_Encryption();
 	
 	//invia un messaggio contenente A, B e il cipher {A, B, Na, eB} cifrato con la shared_key
-	Mess M3_M5(src, dst, nonce, (unsigned char*)cipher.c_str(), cipher.length());
+	Mess M3_M5(src, dst, 0, (unsigned char*)cipher.c_str(), cipher.length());
 	M3_M5.send_mes(sd);
 	M3_M5.print_hex();
 	
