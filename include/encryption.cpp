@@ -34,7 +34,7 @@ string Sym_Encryption::sym_encrypt(const unsigned char* sym_key,
 	string s_cipher;
 
 	//assegno una zona di memoria al plaintext e lo riempo con i dati che lo compongono
-	msg_len = 3* sizeof(int) + P_KEY_LENGTH+1;
+	msg_len = 3* sizeof(int) + P_KEY_LENGTH;
 	plaintext=(unsigned char*)malloc(msg_len);
 	
 	memcpy(&plaintext[pt_ptr], &src, sizeof(int));
@@ -81,7 +81,7 @@ void Sym_Encryption::sym_decrypt(const unsigned char* sym_key, const string ciph
 					nella quale inserire i nuovi dati decifrati*/
 	
 	//assegno una zona di memoria al plaintext
-	msg_len = 3* sizeof(int) + P_KEY_LENGTH+1;
+	msg_len = 3* sizeof(int) + P_KEY_LENGTH;
 	plaintext=(unsigned char*)malloc(msg_len);
 	bzero(plaintext, msg_len);
 	
@@ -108,7 +108,7 @@ void Sym_Encryption::sym_decrypt(const unsigned char* sym_key, const string ciph
 	
 	asym_key.insert(0, (char*)&plaintext[pt_ptr], P_KEY_LENGTH);
 	
-	free(plaintext);
+//	free(plaintext);
 	
 	return;
 }

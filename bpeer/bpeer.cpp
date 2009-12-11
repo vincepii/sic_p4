@@ -98,7 +98,7 @@ int main (int argc, char* argv[])
 		return -1;
 	}
 	
-	sleep(60000);
+//	sleep(60000);
 
 	//creazione ed invio del messaggio M4
 	Nb = rand();
@@ -174,6 +174,8 @@ int main (int argc, char* argv[])
 				"id " << check2 << endl;
 		return -1;
 	}
+	
+cout<<"as_a: "<<as_a_nonce<<endl;
 
 	//Creazione del crittogramma da inviare in M7
 	as_b_nonce = rand();

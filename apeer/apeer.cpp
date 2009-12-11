@@ -108,11 +108,11 @@ int main (int argc, char* argv[])
 		user_err ("Sym key file not found");
 	getline(kfile, sym_key);
 	kfile.close();
-
+cout<<"SONO QUI!!!"<<endl;
 	Sym_Encryption S3;
 	S3.sym_decrypt((const unsigned char *)sym_key.c_str(), cipher, &check1,
 			&check2, &check3, B_asym_key);
-
+	//S3.~Sym_Encryption();
 M3.print_hex();
 //cout<<"pk_s: "<<(unsigned char*)B_asym_key.c_str()<<endl;
 
@@ -129,6 +129,7 @@ M3.print_hex();
 
 	//creazione ed invio M6
 	as_a_nonce = rand();
+cout<<"as_a: "<<as_a_nonce<<endl;
 	As_enc ae_M6(B_PUB_KEY_FILE, "");
 	ae_M6.asym_encr(A_ID, B_ID, as_a_nonce);
 	as_cipher_ll = strlen((const char *)ae_M6.getCipher());
