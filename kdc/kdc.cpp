@@ -5,7 +5,7 @@
 using namespace std;
 
 bool search_public_key(int peer, string& pub_key){
-	unsigned char key[EVP_MAX_KEY_LENGTH];	//shared key
+	unsigned char key[2*EVP_MAX_KEY_LENGTH+1];	//shared key
 	int actual_peer;						//peer letto dal file
 	unsigned char pk_file[1024];			/*path del file contenente la 
 											chiave pubblica del peer*/
@@ -51,16 +51,17 @@ bool search_public_key(int peer, string& pub_key){
 
 
 bool search_shared_key(int peer, string& sh_key){
-	unsigned char key[EVP_MAX_KEY_LENGTH];	//shared key
+	unsigned char key[2*EVP_MAX_KEY_LENGTH+1];	//shared key
 	int actual_peer;						//peer letto dal file
 	unsigned char pk_file[1024];			/*path del file contenente la 
 											chiave pubblica del peer*/
 	FILE* KRep;								//Key Repository file
-	
+
+
 	//apre il file
 	if (!(KRep = fopen("./KeyRepository", "r")))
 		sys_err("Non esiste alcun Key Repository!");
-	
+
 	//cerca l'entry associata al peer e legge la chiave condivisa da esso e dal KDC
 	do{
 		if(feof(KRep)) return false;
@@ -86,38 +87,49 @@ bool search_shared_key(int peer, string& sh_key){
 
 void* body(void* arg){
 	int sd = (int) arg;
-	int src, dst, nonce;
+	int src;
+	int dst;
+	int nonce;
 	string shared_key;
 	string public_key;
 	string cipher;
+
+	cout << "[KDC]: Thread Running..." << endl;
 
 	//ricezione messaggio (sono del tipo A, B, Na)
 	Mess M2_M4(0,0,0,0,0);
 	M2_M4.receive_mes(sd);
 	M2_M4.print();
 	
+	cout << "[KDC]: ricevuto M2/M4" << endl;
+	
 	//estrae mittente, destinatario e nonce
 	src=M2_M4.getSrc_id();
+
 	dst=M2_M4.getDest_id();
 	nonce=M2_M4.getNonce();
 	
 	//ricava dal KeyRepository la chiave condivisa con A
 	if(!search_shared_key(src, shared_key))
 		sys_err("Errore ricerca chiave condivisa tra peer e KDC!");
-		
+
 	//ricava dal KeyRepository la chiave pubblica di B
-	if(!search_shared_key(dst, public_key))
+	if(!search_public_key(dst, public_key))
 		sys_err("Errore ricerca chiave pubblica di un peer!");
+
+cout<<"pk_l: "<<public_key.length()<<endl;
 		
 	//cifra un messaggio contenente A, B, Na, eB usando la shared_key	
 	Sym_Encryption encr_obj;
 	cipher=encr_obj.sym_encrypt((unsigned char*)shared_key.c_str(), src, dst, nonce, (unsigned char*)public_key.c_str());
 	encr_obj.~Sym_Encryption();
-	
+
 	//invia un messaggio contenente A, B e il cipher {A, B, Na, eB} cifrato con la shared_key
 	Mess M3_M5(src, dst, 0, (unsigned char*)cipher.c_str(), cipher.length());
 	M3_M5.send_mes(sd);
 	M3_M5.print_hex();
+	
+	cout << "[KDC]: inviato M3/M5" << endl;
 	
 	/**
 	 * Operazioni KDC:

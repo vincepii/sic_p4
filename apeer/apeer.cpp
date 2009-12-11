@@ -74,15 +74,21 @@ int main (int argc, char* argv[])
 	int as_cipher_ll;
 	unsigned char* as_cipher;
 	unsigned char* as_plain;
+	
+	cout << "[A]: Running..." << endl;
 
 	//Creazione e invio M1
 	Mess M1(A_ID, B_ID);
 	M1.send_mes(b_sd);
+	
+	cout << "[A]: inviato M1" << endl;
 
 	//Creazione e invio M2
 	Na = rand();
 	Mess M2(A_ID, B_ID, Na);
 	M2.send_mes(kdc_sd);
+	
+	cout << "[A]: inviato M2" << endl;
 
 	//Ricezione M3
 	Mess M3(0,0,0,0,0);
@@ -90,6 +96,7 @@ int main (int argc, char* argv[])
 	check1 = M3.getSrc_id();
 	check2 = M3.getDest_id();
 
+	cout << "[A]: ricevuto M3" << endl;
 	if (check1 != A_ID || check2 != B_ID){
 		cout << "[A]: ricevuto M3 con src_id " << check1 << " e dst_id ";
 		cout << check2 << endl;
@@ -105,6 +112,9 @@ int main (int argc, char* argv[])
 	Sym_Encryption S3;
 	S3.sym_decrypt((const unsigned char *)sym_key.c_str(), cipher, &check1,
 			&check2, &check3, B_asym_key);
+
+M3.print_hex();
+//cout<<"pk_s: "<<(unsigned char*)B_asym_key.c_str()<<endl;
 
 	if (check1 != A_ID || check2 != B_ID || check3 != Na){
 		cout << "[A]: ciphertext di M3 con src_id " << check1 << " dest_"
@@ -125,10 +135,14 @@ int main (int argc, char* argv[])
 
 	Mess M6(A_ID, B_ID, 0, ae_M6.getCipher(), as_cipher_ll);
 	M6.send_mes(b_sd);
+	
+	cout << "[A]: inviato M6" << endl;
 
 	//ricezione M7
 	Mess M7(0,0,0,0,0);
 	M7.receive_mes(b_sd);
+
+	cout << "[A]: ricevuto M7" << endl;
 
 	check1 = M7.getSrc_id();
 	check2 = M7.getDest_id();
@@ -163,6 +177,8 @@ int main (int argc, char* argv[])
 
 	Mess M8(A_ID, B_ID, 0, ae_M8.getCipher(), as_cipher_ll);
 	M8.send_mes(b_sd);
+	
+	cout << "[A]: inviato M8" << endl;
 
 	//creazione della chiave di sessione usando as_a_nonce e as_b_nonce
 

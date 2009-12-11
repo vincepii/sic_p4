@@ -1,6 +1,6 @@
 CC=g++
 OPT=-lpthread -Wall -lssl
-BIN=../bin
+BIN=../bin/T
 INCLUDE=../include
 COMMON=$(INCLUDE)/utilities.h $(INCLUDE)/encryption.h $(INCLUDE)/asym_enc.h $(INCLUDE)/comm_layer.h
 OBJ=$(INCLUDE)/utilities.o $(INCLUDE)/encryption.o $(INCLUDE)/asym_enc.o $(INCLUDE)/comm_layer.o
