@@ -82,6 +82,8 @@ int main (int argc, char* argv[])
 	unsigned char* as_plain;
 	int as_a_nonce = 0;
 	int as_b_nonce = 0;
+	
+	cout << "[B]: Running..." << endl;
 
 	//ricezione di M1 e controllo sul mio id
 	Mess M1(0,0,0,0,0);
@@ -89,16 +91,21 @@ int main (int argc, char* argv[])
 	A = M1.getSrc_id();
 	B = M1.getDest_id();
 
+	cout << "[B]: ricevuto M1" << endl;
 	if (B != B_ID){
 		// A non vuole comunicare con me
 		cout << "[B]: ricevuto M1 con dest_id " << B << endl;
 		return -1;
 	}
+	
+	sleep(60000);
 
 	//creazione ed invio del messaggio M4
 	Nb = rand();
 	Mess M4(B_ID, A, Nb);
 	M4.send_mes(kdc_socket);
+	
+	cout << "[B]: inviato M4" << endl;
 
 	//ricezione del messaggio M5 e controlli sugli id
 	Mess M5(0,0,0,0,0);
@@ -106,9 +113,10 @@ int main (int argc, char* argv[])
 	check1 = M5.getSrc_id();
 	check2 = M5.getDest_id();
 
+	cout << "[B]: ricevuto M5" << endl;
 	if (check1 != B_ID || check2 != A){
-		cout << "[B]: ricevuto M2 con src_id " << check1 << " e dest_"
-				"id" << check2 << endl;
+		cout << "[B]: ricevuto M5 con src_id " << check1 << " e dest_"
+				"id " << check2 << endl;
 		return -1;
 	}
 
@@ -146,6 +154,7 @@ int main (int argc, char* argv[])
 	as_cipher = M6.getCipher();
 	as_cipher_ll = M6.getCipher_ll();
 
+	cout << "[B]: ricevuto M6" << endl;
 	if (check1 != A || check2 != B_ID){
 		cout << "[B]: ricevuto M6 con src_id " << check1 << " e dest_id " <<
 				check2 << endl;
@@ -176,12 +185,15 @@ int main (int argc, char* argv[])
 	Mess M7(B_ID, A, 0, ae_M7.getCipher(), as_cipher_ll);
 	M7.send_mes(curr_sd);
 
+	cout << "[B]: inviato M7" << endl;
+
 	//Ricezione di M8 e controlli
 	Mess M8(0,0,0,0,0);
 	M8.receive_mes(curr_sd);
 	check1 = M8.getSrc_id();
 	check2 = M8.getDest_id();
 
+	cout << "[B]: ricevuto M8" << endl;
 	if (check1 != A || check2 != B_ID){
 		cout << "[B]: ricevuto M8 con src_id " << check1 << " e dest_id " <<
 				check2 << endl;
@@ -210,7 +222,7 @@ int main (int argc, char* argv[])
 
 	//calcolare la chiave di sessione usando as_a_nonce e as_b_nonce
 
-	cout << "Ya: " << as_a_nonce << " Yb: " << as_b_nonce << end;
+	cout << "Ya: " << as_a_nonce << " Yb: " << as_b_nonce << endl;
 
 	cout << "Protocollo completato, chiave di sessione stabilita" << endl;
 
