@@ -35,7 +35,7 @@ string Sym_Encryption::sym_encrypt(const unsigned char* sym_key,
 
 	//assegno una zona di memoria al plaintext e lo riempo con i dati che lo compongono
 	msg_len = 3* sizeof(int) + P_KEY_LENGTH;
-	plaintext=(unsigned char*)malloc(msg_len);
+	plaintext=new unsigned char[msg_len];
 	
 	memcpy(&plaintext[pt_ptr], &src, sizeof(int));
 	pt_ptr+=sizeof(int);
@@ -50,7 +50,7 @@ string Sym_Encryption::sym_encrypt(const unsigned char* sym_key,
 
 	//assegno una zona di memoria al ciphertext
 	ct_len=msg_len+EVP_CIPHER_CTX_block_size(this->ctx);
-	ciphertext=(unsigned char*)malloc(ct_len);
+	ciphertext=new unsigned char[ct_len];
 
 	ct_ptr=0;
 	EVP_EncryptUpdate(this->ctx, &ciphertext[ct_ptr], &nc, plaintext, msg_len);
@@ -65,8 +65,11 @@ string Sym_Encryption::sym_encrypt(const unsigned char* sym_key,
 	for (unsigned int i=0; i<s_cipher.length(); i++)
 		printbyte(s_cipher.at(i));
 
-	free(plaintext);
-	///la free del ciphertext??????
+	delete[] plaintext;
+	delete[] ciphertext;
+	//if (EVP_CIPHER_CTX_cleanup(this->ctx)==0)
+		//sys_err("Context deallocation error!");
+
 	return s_cipher;
 }
 
@@ -84,7 +87,7 @@ void Sym_Encryption::sym_decrypt(const unsigned char* sym_key, const string ciph
 	
 	//assegno una zona di memoria al plaintext
 	msg_len = 3* sizeof(int) + P_KEY_LENGTH;
-	plaintext=(unsigned char*)malloc(msg_len);
+	plaintext=new unsigned char[msg_len];
 	bzero(plaintext, msg_len);
 	
 
@@ -104,7 +107,7 @@ void Sym_Encryption::sym_decrypt(const unsigned char* sym_key, const string ciph
 //EVP_DecryptUpdate(this->ctx, &plaintext[pt_ptr], &nd, &cipher[pt_ptr], ct_len);
 	pt_ptr+=nd;
 //}
-cout << "Byte decifrati: " << pt_ptr << endl;
+//cout << "Byte decifrati: " << pt_ptr << endl;
 
 //pt_ptr = 0;
 	EVP_DecryptFinal(this->ctx, &plaintext[pt_ptr], &nd);
@@ -121,9 +124,12 @@ cout << "Byte decifrati: " << pt_ptr << endl;
 	memcpy(nonce, &plaintext[pt_ptr], sizeof(int));
 	pt_ptr+=sizeof(int);
 	
-	asym_key.insert(0, (char*)&plaintext[pt_ptr], P_KEY_LENGTH);
+	//asym_key.insert(0, (char*)&plaintext[pt_ptr], P_KEY_LENGTH);
+	asym_key.assign((const char *)&plaintext[pt_ptr], P_KEY_LENGTH);
 	
-//	free(plaintext);
+	//delete[] plaintext;
+	//if (EVP_CIPHER_CTX_cleanup(this->ctx)==0)
+		//sys_err("Context deallocation error!");
 	
 	return;
 }

@@ -140,14 +140,17 @@ int main (int argc, char* argv[])
 	}
 
 	//considero la chiave pubblica di A valida, scrivo il file .pem
-//	as_k_file.open(A_PUB_KEY_FILE, ios::out | ios::binary);
-//	if (!as_k_file.is_open()) sys_err ("Unable to create asym key file");
-//	as_k_file.write(A_asym_key.data(), A_asym_key.length());
-//	as_k_file.close();
+	as_k_file.open(A_PUB_KEY_FILE, ios::out | ios::binary);
+	if (!as_k_file.is_open()) sys_err ("Unable to create asym key file");
+	as_k_file.write(A_asym_key.data(), A_asym_key.length());
+	as_k_file.close();
+
+//sleep(600);
 
 	//Ricezione di M6 e controlli sugli ID
 	Mess M6(0,0,0,"");
 	M6.receive_mes(curr_sd);
+
 	check1 = M6.getSrc_id();
 	check2 = M6.getDest_id();
 	as_cipher = M6.getCipher();

@@ -3,10 +3,12 @@
 
 As_enc::As_enc(string pubfile, string privfile)
 {
+	cout << "sono quiiiiii" << endl;
 	this->pubkey_file = pubfile;
 	this->privkey_file = privfile;
-	this->cipher = "";
-	this->plain = "";
+	//this->cipher = "";
+	//this->plain = "";
+	cout << "fine costruttore" << endl;
 }
 
 int As_enc::asym_encr(int src_id, int dst_id, int nonce1)

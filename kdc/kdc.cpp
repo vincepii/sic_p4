@@ -31,7 +31,7 @@ bool search_public_key(int peer, string& pub_key){
 		sys_err("Non esiste alcun file contenente la chiave pubblica richiesta!");
 	
 	fseek (pub_file, 0, SEEK_END); 
-	buffer=(unsigned char*)malloc((length=ftell(pub_file)));
+	buffer=(unsigned char *)malloc(length=ftell(pub_file));
 	rewind(pub_file);
 	
 	fread (buffer, sizeof(unsigned char), length, pub_file); 
