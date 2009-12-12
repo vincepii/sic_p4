@@ -79,7 +79,7 @@ int main (int argc, char* argv[])
 	ofstream as_k_file;
 	unsigned char* as_cipher;
 	int as_cipher_ll = 0;
-	unsigned char* as_plain;
+	//unsigned char* as_plain;
 	int as_a_nonce = 0;
 	int as_b_nonce = 0;
 	
@@ -97,11 +97,9 @@ int main (int argc, char* argv[])
 		cout << "[B]: ricevuto M1 con dest_id " << B << endl;
 		return -1;
 	}
-	
-//	sleep(60000);
 
 	//creazione ed invio del messaggio M4
-	Nb = rand();
+	Nb = rand() % 100 + 1;
 	Mess M4(B_ID, A, Nb);
 	M4.send_mes(kdc_socket);
 	
@@ -141,10 +139,10 @@ int main (int argc, char* argv[])
 	}
 
 	//considero la chiave pubblica di A valida, scrivo il file .pem
-	as_k_file.open(A_PUB_KEY_FILE, ios::out | ios::binary);
-	if (!as_k_file.is_open()) sys_err ("Unable to create asym key file");
-	as_k_file.write(A_asym_key.c_str(), A_asym_key.length());
-	as_k_file.close();
+//	as_k_file.open(A_PUB_KEY_FILE, ios::out | ios::binary);
+//	if (!as_k_file.is_open()) sys_err ("Unable to create asym key file");
+//	as_k_file.write(A_asym_key.c_str(), A_asym_key.length());
+//	as_k_file.close();
 
 	//Ricezione di M6 e controlli sugli ID
 	Mess M6(0,0,0,0,0);
@@ -164,21 +162,16 @@ int main (int argc, char* argv[])
 	//Decifratura del crittogramma contenuto in M6 e controllo sugli ID
 	As_enc ae_M6("", PRIV_KEY_FILE);
 	ae_M6.asym_decr(as_cipher, as_cipher_ll);
-	as_plain = ae_M6.getPlain();
-	check1 = as_plain[0];
-	check2 = as_plain[1 * sizeof(int)];
-	as_a_nonce = as_plain[2 * sizeof(int)];
+	ae_M6.extract_integers(&check1, &check2, &as_a_nonce);
 
 	if (check1 != A || check2 != B_ID){
 		cout << "[B]: ciphertext di M6 con src_id " << check1 << " dest_"
 				"id " << check2 << endl;
 		return -1;
 	}
-	
-cout<<"as_a: "<<as_a_nonce<<endl;
 
 	//Creazione del crittogramma da inviare in M7
-	as_b_nonce = rand();
+	as_b_nonce = rand() % 100 + 1;
 	As_enc ae_M7(A_PUB_KEY_FILE, "");
 	ae_M7.asym_encr(B_ID, A, as_a_nonce, as_b_nonce);
 	as_cipher_ll = strlen((const char *)ae_M7.getCipher());
@@ -208,11 +201,12 @@ cout<<"as_a: "<<as_a_nonce<<endl;
 
 	As_enc ae_M8("", PRIV_KEY_FILE);
 	ae_M8.asym_decr(as_cipher, as_cipher_ll);
-	as_plain = ae_M8.getPlain();
-	check1 = as_plain[0];
-	check2 = as_plain[sizeof(int)];
-	check3 = as_plain[2 * sizeof(int)];
-	check4 = as_plain[3 * sizeof(int)];
+	ae_M8.extract_integers(&check1, &check2, &check3, &check4);
+	//as_plain = ae_M8.getPlain();
+	//check1 = as_plain[0];
+	//check2 = as_plain[sizeof(int)];
+	//check3 = as_plain[2 * sizeof(int)];
+	//check4 = as_plain[3 * sizeof(int)];
 
 	if (check1 != A || check2 !=B_ID ||
 			check3 != as_b_nonce || check4 != as_a_nonce){

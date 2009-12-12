@@ -1,6 +1,8 @@
 #include "utilities.h"
 #include <openssl/rsa.h>
 #include <openssl/pem.h>
+#include <openssl/err.h>
+#include <openssl/engine.h>
 #include <fstream>
 
 #ifndef __ASYM_ENC_H__
@@ -67,6 +69,8 @@ public:
 	void print_plain(int number_of_int_carried);
 	unsigned char* getCipher();
 	unsigned char* getPlain();
+	void extract_integers(int* a, int* b, int* c);
+	void extract_integers(int* a, int* b, int* c, int* d);
 	~As_enc();
 };
 

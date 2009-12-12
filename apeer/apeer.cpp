@@ -73,7 +73,7 @@ int main (int argc, char* argv[])
 	int as_b_nonce;
 	int as_cipher_ll;
 	unsigned char* as_cipher;
-	unsigned char* as_plain;
+	//unsigned char* as_plain;
 	
 	cout << "[A]: Running..." << endl;
 
@@ -84,7 +84,7 @@ int main (int argc, char* argv[])
 	cout << "[A]: inviato M1" << endl;
 
 	//Creazione e invio M2
-	Na = rand();
+	Na = rand() % 100 + 1;
 	Mess M2(A_ID, B_ID, Na);
 	M2.send_mes(kdc_sd);
 	
@@ -108,28 +108,26 @@ int main (int argc, char* argv[])
 		user_err ("Sym key file not found");
 	getline(kfile, sym_key);
 	kfile.close();
-cout<<"SONO QUI!!!"<<endl;
+
 	Sym_Encryption S3;
 	S3.sym_decrypt((const unsigned char *)sym_key.c_str(), cipher, &check1,
 			&check2, &check3, B_asym_key);
 	//S3.~Sym_Encryption();
-M3.print_hex();
-//cout<<"pk_s: "<<(unsigned char*)B_asym_key.c_str()<<endl;
 
 	if (check1 != A_ID || check2 != B_ID || check3 != Na){
 		cout << "[A]: ciphertext di M3 con src_id " << check1 << " dest_"
 				"id " << check2 << " nonce " << check3 << endl;
 		return -1;
 	}
-
-	as_k_file.open(B_PUB_KEY_FILE, ios::out | ios::binary);
-	if (!as_k_file.is_open()) sys_err ("Unable to create asym key file");
-	as_k_file.write(B_asym_key.c_str(), B_asym_key.length());
-	as_k_file.close();
+cout << B_asym_key << endl;
+//	as_k_file.open(B_PUB_KEY_FILE, ios::out | ios::binary);
+//	if (!as_k_file.is_open()) sys_err ("Unable to create asym key file");
+//	as_k_file.write(B_asym_key.c_str(), B_asym_key.length());
+//	as_k_file.close();
 
 	//creazione ed invio M6
-	as_a_nonce = rand();
-cout<<"as_a: "<<as_a_nonce<<endl;
+	as_a_nonce = rand() % 100 + 1;
+
 	As_enc ae_M6(B_PUB_KEY_FILE, "");
 	ae_M6.asym_encr(A_ID, B_ID, as_a_nonce);
 	as_cipher_ll = strlen((const char *)ae_M6.getCipher());
@@ -142,11 +140,10 @@ cout<<"as_a: "<<as_a_nonce<<endl;
 	//ricezione M7
 	Mess M7(0,0,0,0,0);
 	M7.receive_mes(b_sd);
-
-	cout << "[A]: ricevuto M7" << endl;
-
 	check1 = M7.getSrc_id();
 	check2 = M7.getDest_id();
+
+	cout << "[A]: ricevuto M7" << endl;
 	if (check1 != B_ID || check2 != A_ID){
 		cout << "[A]: ricevuto M7 con src_id " << check1 << " e dst_id ";
 		cout << check2 << endl;
@@ -158,12 +155,13 @@ cout<<"as_a: "<<as_a_nonce<<endl;
 
 	As_enc ae_M7("", PRIV_KEY_FILE);
 	ae_M7.asym_decr(as_cipher, as_cipher_ll);
+	ae_M7.extract_integers(&check1, &check2, &check3, &as_b_nonce);
 
-	as_plain = ae_M7.getPlain();
-	check1 = as_plain[0];
-	check2 = as_plain[1 * sizeof(int)];
-	check3 = as_plain[2 * sizeof(int)];
-	as_b_nonce = as_plain[3 * sizeof(int)];
+//	as_plain = ae_M7.getPlain();
+//	check1 = as_plain[0];
+//	check2 = as_plain[1 * sizeof(int)];
+//	check3 = as_plain[2 * sizeof(int)];
+//	as_b_nonce = as_plain[3 * sizeof(int)];
 
 	if (check1 != B_ID || check2 != A_ID || check3 != as_a_nonce){
 		cout << "[A]: ciphertext di M8 con src_id " << check1;

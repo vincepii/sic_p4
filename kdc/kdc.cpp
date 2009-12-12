@@ -117,7 +117,7 @@ void* body(void* arg){
 	if(!search_public_key(dst, public_key))
 		sys_err("Errore ricerca chiave pubblica di un peer!");
 
-cout<<"pk_l: "<<public_key.length()<<endl;
+cout<<"pk_l: "<<public_key<<endl;
 		
 	//cifra un messaggio contenente A, B, Na, eB usando la shared_key	
 	Sym_Encryption encr_obj;

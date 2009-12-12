@@ -79,19 +79,34 @@ void Sym_Encryption::sym_decrypt(const unsigned char* sym_key, const string ciph
 	int nd;			//numero byte effettivamente decifrati
 	int pt_ptr=0;	/*puntatore alla posizione di plaintext 
 					nella quale inserire i nuovi dati decifrati*/
+//int ct_len = 0;
+//unsigned char* cipher;
 	
 	//assegno una zona di memoria al plaintext
 	msg_len = 3* sizeof(int) + P_KEY_LENGTH;
 	plaintext=(unsigned char*)malloc(msg_len);
 	bzero(plaintext, msg_len);
 	
+
+
 	//decifro
 	EVP_DecryptInit(this->ctx, EVP_des_ecb(), sym_key, NULL);
 	
+//ct_len = msg_len + EVP_CIPHER_CTX_block_size(this->ctx);
+//cipher=(unsigned char*)malloc(ct_len);
+//bzero(cipher, ct_len);
+//cipher=(unsigned char*)ciphertext.c_str();
+
 	pt_ptr=0;
-	EVP_DecryptUpdate(this->ctx, &plaintext[pt_ptr], &nd, (unsigned char*)ciphertext.c_str(), ciphertext.length());
+//while(pt_ptr <= ciphertext.length()){
+	EVP_DecryptUpdate(this->ctx, &plaintext[pt_ptr], &nd, ((unsigned char*)ciphertext.c_str()), ciphertext.length());
+//EVP_DecryptUpdate(this->ctx, &plaintext[pt_ptr], &nd, (unsigned char*)(ciphertext.substr(pt_ptr, ciphertext.length()-pt_ptr)).c_str(), ciphertext.length());
+//EVP_DecryptUpdate(this->ctx, &plaintext[pt_ptr], &nd, &cipher[pt_ptr], ct_len);
 	pt_ptr+=nd;
-	
+//}
+cout << "Byte decifrati: " << pt_ptr << endl;
+
+//pt_ptr = 0;
 	EVP_DecryptFinal(this->ctx, &plaintext[pt_ptr], &nd);
 	pt_ptr+=nd;
 
