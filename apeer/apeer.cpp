@@ -111,9 +111,11 @@ int main (int argc, char* argv[])
 	kfile.close();
 
 	Sym_Encryption S3;
+	
 	S3.sym_decrypt((const unsigned char *)sym_key.data(), cipher, &check1,
 			&check2, &check3, B_asym_key);
-	//S3.~Sym_Encryption();
+
+	S3.~Sym_Encryption();
 
 	if (check1 != A_ID || check2 != B_ID || check3 != Na){
 		cout << "[A]: ciphertext di M3 con src_id " << check1 << " dest_"
@@ -128,7 +130,6 @@ int main (int argc, char* argv[])
 
 	//creazione ed invio M6
 	as_a_nonce = rand() % 100 + 1;
-
 	As_enc ae_M6(B_PUB_KEY_FILE, "");
 	ae_M6.asym_encr(A_ID, B_ID, as_a_nonce);
 	//as_cipher_ll = strlen((const char *)ae_M6.getCipher());

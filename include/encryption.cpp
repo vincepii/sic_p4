@@ -66,7 +66,7 @@ string Sym_Encryption::sym_encrypt(const unsigned char* sym_key,
 		printbyte(s_cipher.at(i));
 
 	free(plaintext);
-	///la free del ciphertext??????
+	free(ciphertext);
 	return s_cipher;
 }
 
@@ -83,11 +83,9 @@ void Sym_Encryption::sym_decrypt(const unsigned char* sym_key, const string ciph
 //unsigned char* cipher;
 	
 	//assegno una zona di memoria al plaintext
-	msg_len = 3* sizeof(int) + P_KEY_LENGTH;
+	msg_len = 3* sizeof(int) + P_KEY_LENGTH+8;
 	plaintext=(unsigned char*)malloc(msg_len);
-	bzero(plaintext, msg_len);
-	
-
+	//bzero(plaintext, msg_len);
 
 	//decifro
 	EVP_DecryptInit(this->ctx, EVP_des_ecb(), sym_key, NULL);
@@ -121,9 +119,10 @@ cout << "Byte decifrati: " << pt_ptr << endl;
 	memcpy(nonce, &plaintext[pt_ptr], sizeof(int));
 	pt_ptr+=sizeof(int);
 	
-	asym_key.insert(0, (char*)&plaintext[pt_ptr], P_KEY_LENGTH);
-	
-//	free(plaintext);
+//	asym_key.insert(0, &((const char)plaintext[pt_ptr]), P_KEY_LENGTH);
+	asym_key.assign((const char*)&plaintext[pt_ptr], P_KEY_LENGTH);
+
+	free(plaintext);
 	
 	return;
 }
