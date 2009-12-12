@@ -97,7 +97,7 @@ void* body(void* arg){
 	cout << "[KDC]: Thread Running..." << endl;
 
 	//ricezione messaggio (sono del tipo A, B, Na)
-	Mess M2_M4(0,0,0,0,0);
+	Mess M2_M4(0,0,0,"");
 	M2_M4.receive_mes(sd);
 	M2_M4.print();
 	
@@ -121,11 +121,11 @@ cout<<"pk_l: "<<public_key<<endl;
 		
 	//cifra un messaggio contenente A, B, Na, eB usando la shared_key	
 	Sym_Encryption encr_obj;
-	cipher=encr_obj.sym_encrypt((unsigned char*)shared_key.c_str(), src, dst, nonce, (unsigned char*)public_key.c_str());
+	cipher=encr_obj.sym_encrypt((unsigned char*)shared_key.data(), src, dst, nonce, (unsigned char*)public_key.data());
 	encr_obj.~Sym_Encryption();
 
 	//invia un messaggio contenente A, B e il cipher {A, B, Na, eB} cifrato con la shared_key
-	Mess M3_M5(src, dst, 0, (unsigned char*)cipher.c_str(), cipher.length());
+	Mess M3_M5(src, dst, 0, cipher);
 	M3_M5.send_mes(sd);
 	M3_M5.print_hex();
 	

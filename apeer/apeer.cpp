@@ -71,27 +71,27 @@ int main (int argc, char* argv[])
 	ofstream as_k_file;
 	int as_a_nonce;
 	int as_b_nonce;
-	int as_cipher_ll;
-	unsigned char* as_cipher;
+	//int as_cipher_ll;
+	string as_cipher;
 	//unsigned char* as_plain;
 	
 	cout << "[A]: Running..." << endl;
 
 	//Creazione e invio M1
-	Mess M1(A_ID, B_ID);
+	Mess M1(A_ID, B_ID, 0, "");
 	M1.send_mes(b_sd);
 	
 	cout << "[A]: inviato M1" << endl;
 
 	//Creazione e invio M2
 	Na = rand() % 100 + 1;
-	Mess M2(A_ID, B_ID, Na);
+	Mess M2(A_ID, B_ID, Na, "");
 	M2.send_mes(kdc_sd);
 	
 	cout << "[A]: inviato M2" << endl;
 
 	//Ricezione M3
-	Mess M3(0,0,0,0,0);
+	Mess M3(0,0,0,"");
 	M3.receive_mes(kdc_sd);
 	check1 = M3.getSrc_id();
 	check2 = M3.getDest_id();
@@ -102,7 +102,8 @@ int main (int argc, char* argv[])
 		cout << check2 << endl;
 		return -1;
 	}
-	cipher.assign((const char *)M3.getCipher());
+	//cipher.assign((const char *)M3.getCipher());
+	cipher = M3.getCipher();
 	kfile.open(SYM_KEY_FILE, ios::in | ios::binary);
 	if (!kfile.is_open())
 		user_err ("Sym key file not found");
@@ -110,7 +111,7 @@ int main (int argc, char* argv[])
 	kfile.close();
 
 	Sym_Encryption S3;
-	S3.sym_decrypt((const unsigned char *)sym_key.c_str(), cipher, &check1,
+	S3.sym_decrypt((const unsigned char *)sym_key.data(), cipher, &check1,
 			&check2, &check3, B_asym_key);
 	//S3.~Sym_Encryption();
 
@@ -119,10 +120,10 @@ int main (int argc, char* argv[])
 				"id " << check2 << " nonce " << check3 << endl;
 		return -1;
 	}
-cout << B_asym_key << endl;
+//cout << B_asym_key << endl;
 //	as_k_file.open(B_PUB_KEY_FILE, ios::out | ios::binary);
 //	if (!as_k_file.is_open()) sys_err ("Unable to create asym key file");
-//	as_k_file.write(B_asym_key.c_str(), B_asym_key.length());
+//	as_k_file.write(B_asym_key.data(), B_asym_key.length());
 //	as_k_file.close();
 
 	//creazione ed invio M6
@@ -130,15 +131,15 @@ cout << B_asym_key << endl;
 
 	As_enc ae_M6(B_PUB_KEY_FILE, "");
 	ae_M6.asym_encr(A_ID, B_ID, as_a_nonce);
-	as_cipher_ll = strlen((const char *)ae_M6.getCipher());
+	//as_cipher_ll = strlen((const char *)ae_M6.getCipher());
 
-	Mess M6(A_ID, B_ID, 0, ae_M6.getCipher(), as_cipher_ll);
+	Mess M6(A_ID, B_ID, 0, ae_M6.getCipher());
 	M6.send_mes(b_sd);
 	
 	cout << "[A]: inviato M6" << endl;
 
 	//ricezione M7
-	Mess M7(0,0,0,0,0);
+	Mess M7(0,0,0,"");
 	M7.receive_mes(b_sd);
 	check1 = M7.getSrc_id();
 	check2 = M7.getDest_id();
@@ -151,10 +152,11 @@ cout << B_asym_key << endl;
 	}
 
 	as_cipher = M7.getCipher();
-	as_cipher_ll = M7.getCipher_ll();
+	//as_cipher = (unsigned char *)M7.getCipher().c_str();
+	//as_cipher_ll = M7.getCipher_ll();
 
 	As_enc ae_M7("", PRIV_KEY_FILE);
-	ae_M7.asym_decr(as_cipher, as_cipher_ll);
+	ae_M7.asym_decr(as_cipher);
 	ae_M7.extract_integers(&check1, &check2, &check3, &as_b_nonce);
 
 //	as_plain = ae_M7.getPlain();
@@ -172,9 +174,9 @@ cout << B_asym_key << endl;
 	//creazione e invio M8
 	As_enc ae_M8(B_PUB_KEY_FILE, "");
 	ae_M8.asym_encr(A_ID, B_ID, as_b_nonce, as_a_nonce);
-	as_cipher_ll = strlen((const char *)ae_M8.getCipher());
+	//as_cipher_ll = strlen((const char *)ae_M8.getCipher());
 
-	Mess M8(A_ID, B_ID, 0, ae_M8.getCipher(), as_cipher_ll);
+	Mess M8(A_ID, B_ID, 0, ae_M8.getCipher());
 	M8.send_mes(b_sd);
 	
 	cout << "[A]: inviato M8" << endl;

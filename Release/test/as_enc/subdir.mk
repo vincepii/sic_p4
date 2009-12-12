@@ -3,11 +3,6 @@
 ################################################################################
 
 # Add inputs and outputs from these tool invocations to the build variables 
-O_SRCS += \
-../test/as_enc/asym_enc.o \
-../test/as_enc/comm_layer.o \
-../test/as_enc/utilities.o 
-
 CPP_SRCS += \
 ../test/as_enc/apeer.cpp \
 ../test/as_enc/kdc.cpp 

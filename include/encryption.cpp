@@ -99,7 +99,7 @@ void Sym_Encryption::sym_decrypt(const unsigned char* sym_key, const string ciph
 
 	pt_ptr=0;
 //while(pt_ptr <= ciphertext.length()){
-	EVP_DecryptUpdate(this->ctx, &plaintext[pt_ptr], &nd, ((unsigned char*)ciphertext.c_str()), ciphertext.length());
+	EVP_DecryptUpdate(this->ctx, &plaintext[pt_ptr], &nd, ((unsigned char*)ciphertext.data()), ciphertext.length());
 //EVP_DecryptUpdate(this->ctx, &plaintext[pt_ptr], &nd, (unsigned char*)(ciphertext.substr(pt_ptr, ciphertext.length()-pt_ptr)).c_str(), ciphertext.length());
 //EVP_DecryptUpdate(this->ctx, &plaintext[pt_ptr], &nd, &cipher[pt_ptr], ct_len);
 	pt_ptr+=nd;

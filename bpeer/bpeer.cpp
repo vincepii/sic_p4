@@ -34,7 +34,7 @@ int main (int argc, char* argv[])
 	inet_pton(AF_INET, server_ip.data(), &addr.sin_addr.s_addr);
 
 	if (connect(kdc_socket, CAST_ADDR(&addr), sizeof(struct sockaddr_in)) < 0)
-		sys_err("CL: connection error");
+		sys_err("B: connection error");
 
 	//-------------------------------------------------------------------------
 	//PREPARAZIONE SOCKET PER COLLEGAMENTO CON A
@@ -51,7 +51,7 @@ int main (int argc, char* argv[])
 	addrlen = sizeof(c_add);
 
 	curr_sd = accept(rec_socket, CAST_ADDR(&c_add), &addrlen);
-	if(curr_sd < 0) sys_err("KDC: accept failed");
+	if(curr_sd < 0) sys_err("B: accept failed");
 
 	//-------------------------------------------------------------------------
 
@@ -77,8 +77,8 @@ int main (int argc, char* argv[])
 	string A_asym_key;
 	ifstream kfile;
 	ofstream as_k_file;
-	unsigned char* as_cipher;
-	int as_cipher_ll = 0;
+	string as_cipher;
+	//int as_cipher_ll = 0;
 	//unsigned char* as_plain;
 	int as_a_nonce = 0;
 	int as_b_nonce = 0;
@@ -86,7 +86,7 @@ int main (int argc, char* argv[])
 	cout << "[B]: Running..." << endl;
 
 	//ricezione di M1 e controllo sul mio id
-	Mess M1(0,0,0,0,0);
+	Mess M1(0,0,0,"");
 	M1.receive_mes(curr_sd);
 	A = M1.getSrc_id();
 	B = M1.getDest_id();
@@ -100,13 +100,13 @@ int main (int argc, char* argv[])
 
 	//creazione ed invio del messaggio M4
 	Nb = rand() % 100 + 1;
-	Mess M4(B_ID, A, Nb);
+	Mess M4(B_ID, A, Nb, "");
 	M4.send_mes(kdc_socket);
 	
 	cout << "[B]: inviato M4" << endl;
 
 	//ricezione del messaggio M5 e controlli sugli id
-	Mess M5(0,0,0,0,0);
+	Mess M5(0,0,0,"");
 	M5.receive_mes(kdc_socket);
 	check1 = M5.getSrc_id();
 	check2 = M5.getDest_id();
@@ -119,7 +119,8 @@ int main (int argc, char* argv[])
 	}
 
 	//recupero del ciphertext e della chiave simmetrica da file (M5)
-	cipher.assign((const char*)M5.getCipher());
+	//cipher.assign((const char*)M5.getCipher());
+	cipher = M5.getCipher();
 
 	kfile.open(SYM_KEY_FILE, ios::in | ios::binary);
 	if (!kfile.is_open())
@@ -129,7 +130,7 @@ int main (int argc, char* argv[])
 
 	//decifratura del ciphertext (M5)
 	Sym_Encryption S5;
-	S5.sym_decrypt((const unsigned char*)sym_key.c_str(), cipher, &check1,
+	S5.sym_decrypt((const unsigned char*)sym_key.data(), cipher, &check1,
 			&check2, &check3, A_asym_key);
 
 	if (check1 != B_ID || check2 != A || check3 != Nb){
@@ -141,16 +142,16 @@ int main (int argc, char* argv[])
 	//considero la chiave pubblica di A valida, scrivo il file .pem
 //	as_k_file.open(A_PUB_KEY_FILE, ios::out | ios::binary);
 //	if (!as_k_file.is_open()) sys_err ("Unable to create asym key file");
-//	as_k_file.write(A_asym_key.c_str(), A_asym_key.length());
+//	as_k_file.write(A_asym_key.data(), A_asym_key.length());
 //	as_k_file.close();
 
 	//Ricezione di M6 e controlli sugli ID
-	Mess M6(0,0,0,0,0);
+	Mess M6(0,0,0,"");
 	M6.receive_mes(curr_sd);
 	check1 = M6.getSrc_id();
 	check2 = M6.getDest_id();
 	as_cipher = M6.getCipher();
-	as_cipher_ll = M6.getCipher_ll();
+	//as_cipher_ll = M6.getCipher_ll();
 
 	cout << "[B]: ricevuto M6" << endl;
 	if (check1 != A || check2 != B_ID){
@@ -161,7 +162,7 @@ int main (int argc, char* argv[])
 
 	//Decifratura del crittogramma contenuto in M6 e controllo sugli ID
 	As_enc ae_M6("", PRIV_KEY_FILE);
-	ae_M6.asym_decr(as_cipher, as_cipher_ll);
+	ae_M6.asym_decr(as_cipher);
 	ae_M6.extract_integers(&check1, &check2, &as_a_nonce);
 
 	if (check1 != A || check2 != B_ID){
@@ -174,16 +175,16 @@ int main (int argc, char* argv[])
 	as_b_nonce = rand() % 100 + 1;
 	As_enc ae_M7(A_PUB_KEY_FILE, "");
 	ae_M7.asym_encr(B_ID, A, as_a_nonce, as_b_nonce);
-	as_cipher_ll = strlen((const char *)ae_M7.getCipher());
+	//as_cipher_ll = strlen((const char *)ae_M7.getCipher());
 
 	//Creazione ed invio del messaggio M7
-	Mess M7(B_ID, A, 0, ae_M7.getCipher(), as_cipher_ll);
+	Mess M7(B_ID, A, 0, ae_M7.getCipher());
 	M7.send_mes(curr_sd);
 
 	cout << "[B]: inviato M7" << endl;
 
 	//Ricezione di M8 e controlli
-	Mess M8(0,0,0,0,0);
+	Mess M8(0,0,0,"");
 	M8.receive_mes(curr_sd);
 	check1 = M8.getSrc_id();
 	check2 = M8.getDest_id();
@@ -197,10 +198,10 @@ int main (int argc, char* argv[])
 
 	//decifratura del cipher di M8
 	as_cipher = M8.getCipher();
-	as_cipher_ll = M8.getCipher_ll();
+	//as_cipher_ll = M8.getCipher_ll();
 
 	As_enc ae_M8("", PRIV_KEY_FILE);
-	ae_M8.asym_decr(as_cipher, as_cipher_ll);
+	ae_M8.asym_decr(as_cipher);
 	ae_M8.extract_integers(&check1, &check2, &check3, &check4);
 	//as_plain = ae_M8.getPlain();
 	//check1 = as_plain[0];

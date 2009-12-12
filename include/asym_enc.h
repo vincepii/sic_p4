@@ -55,23 +55,23 @@ private:
 	string pubkey_file;
 	string privkey_file;
 	//cifrario creato da public_encrypt
-	unsigned char* cipher;
+	string cipher;
 	//plaintext ottenuto da private_decrypt
-	unsigned char* plain;
+	string plain;
 public:
 	As_enc(string pubfile, string privfile);
 	int asym_encr(int src_id, int dst_id, int nonce1);
 	int asym_encr(int src_id, int dst_id, int nonce1, int nonce2);
-	int asym_decr(unsigned char* from, int cipher_ll);
+	int asym_decr(string from);
 	/**
 	 * Legge gli interi contenuti nel plaintext decifrato
 	 */
 	void print_plain(int number_of_int_carried);
-	unsigned char* getCipher();
-	unsigned char* getPlain();
+	string getCipher();
+	string getPlain();
 	void extract_integers(int* a, int* b, int* c);
 	void extract_integers(int* a, int* b, int* c, int* d);
-	~As_enc();
+	//~As_enc();
 };
 
 #endif
