@@ -99,6 +99,7 @@ int main (int argc, char* argv[])
 	}
 
 	//creazione ed invio del messaggio M4
+	srand(9);
 	Nb = rand() % 100 + 1;
 	Mess M4(B_ID, A, Nb, "");
 	M4.send_mes(kdc_socket);
@@ -175,6 +176,7 @@ int main (int argc, char* argv[])
 	}
 
 	//Creazione del crittogramma da inviare in M7
+	srand(4);
 	as_b_nonce = rand() % 100 + 1;
 	As_enc ae_M7(A_PUB_KEY_FILE, "");
 	ae_M7.asym_encr(B_ID, A, as_a_nonce, as_b_nonce);

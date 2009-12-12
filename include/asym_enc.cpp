@@ -3,12 +3,10 @@
 
 As_enc::As_enc(string pubfile, string privfile)
 {
-	cout << "sono quiiiiii" << endl;
 	this->pubkey_file = pubfile;
 	this->privkey_file = privfile;
 	//this->cipher = "";
 	//this->plain = "";
-	cout << "fine costruttore" << endl;
 }
 
 int As_enc::asym_encr(int src_id, int dst_id, int nonce1)
@@ -95,7 +93,13 @@ int As_enc::asym_encr(int src_id, int dst_id, int nonce1, int nonce2)
 	check = RSA_public_encrypt(dim, from, dest, pubkey, RSA_PKCS1_OAEP_PADDING);
 
 	if (check < dim || check == -1) {
-		cout << ERR_error_string(ERR_get_error(), NULL) << endl;
+		//cout << ERR_error_string(ERR_get_error(), NULL) << endl;
+		ERR_load_crypto_strings();
+		char errbuf[180];
+		char *buf=errbuf;
+		ERR_error_string(ERR_get_error(),buf);
+		cout << errbuf;
+		ERR_free_strings();
 		sys_err ("Public key encryption error");
 	}
 
@@ -130,15 +134,22 @@ int As_enc::asym_decr(string ctxt)
 	//this->plain = new unsigned char[16];
 	//bzero(this->plain, 16);
 	//dim = cipher_length;
-	dim = ctxt.length();
+	dim = RSA_size(privkey);
 	check = RSA_private_decrypt(dim, from, dest, privkey, RSA_PKCS1_OAEP_PADDING);
 
 	if (check == -1) {
-		cout << ERR_error_string(ERR_get_error(), NULL) << endl;
+		//cout << ERR_error_string(ERR_get_error(), NULL) << endl;
+		ERR_load_crypto_strings();
+		char errbuf[180];
+		char *buf=errbuf;
+		ERR_error_string(ERR_get_error(),buf);
+		cout << errbuf;
+		ERR_free_strings();
 		sys_err ("Private key decryption error");
 	}
 
-	this->plain.assign((const char *)dest);
+	this->plain.assign((const char *)dest, dim);
+	//this->print_plain(3);
 	delete[] dest;
 	RSA_free(privkey);
 

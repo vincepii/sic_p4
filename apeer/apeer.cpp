@@ -84,6 +84,7 @@ int main (int argc, char* argv[])
 	cout << "[A]: inviato M1" << endl;
 
 	//Creazione e invio M2
+	srand(13);
 	Na = rand() % 100 + 1;
 	Mess M2(A_ID, B_ID, Na, "");
 	M2.send_mes(kdc_sd);
@@ -123,16 +124,17 @@ int main (int argc, char* argv[])
 		return -1;
 	}
 
-cout << B_asym_key << endl;
+//cout << B_asym_key << endl;
 	as_k_file.open(B_PUB_KEY_FILE, ios::out | ios::binary);
 	if (!as_k_file.is_open()) sys_err ("Unable to create asym key file");
 	as_k_file.write(B_asym_key.data(), B_asym_key.length());
 	as_k_file.close();
 
 	//creazione ed invio M6
+	srand(8);
 	as_a_nonce = rand() % 100 + 1;
 	As_enc ae_M6(B_PUB_KEY_FILE, "");
-cout << "Ciao mondo" << endl;
+
 	ae_M6.asym_encr(A_ID, B_ID, as_a_nonce);
 	//as_cipher_ll = strlen((const char *)ae_M6.getCipher());
 
