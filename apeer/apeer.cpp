@@ -111,8 +111,10 @@ int main (int argc, char* argv[])
 	kfile.close();
 
 	Sym_Encryption S3;
+	
 	S3.sym_decrypt((const unsigned char *)sym_key.data(), cipher, &check1,
 			&check2, &check3, B_asym_key);
+
 	S3.~Sym_Encryption();
 
 	if (check1 != A_ID || check2 != B_ID || check3 != Na){
@@ -129,8 +131,6 @@ cout << B_asym_key << endl;
 
 	//creazione ed invio M6
 	as_a_nonce = rand() % 100 + 1;
-cout << "arrivato prima di M6" << endl;
-//sleep(600);
 	As_enc ae_M6(B_PUB_KEY_FILE, "");
 cout << "Ciao mondo" << endl;
 	ae_M6.asym_encr(A_ID, B_ID, as_a_nonce);

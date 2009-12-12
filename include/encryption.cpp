@@ -35,7 +35,7 @@ string Sym_Encryption::sym_encrypt(const unsigned char* sym_key,
 
 	//assegno una zona di memoria al plaintext e lo riempo con i dati che lo compongono
 	msg_len = 3* sizeof(int) + P_KEY_LENGTH;
-	plaintext=new unsigned char[msg_len];
+	plaintext=(unsigned char *)malloc(msg_len);
 	
 	memcpy(&plaintext[pt_ptr], &src, sizeof(int));
 	pt_ptr+=sizeof(int);
@@ -50,7 +50,7 @@ string Sym_Encryption::sym_encrypt(const unsigned char* sym_key,
 
 	//assegno una zona di memoria al ciphertext
 	ct_len=msg_len+EVP_CIPHER_CTX_block_size(this->ctx);
-	ciphertext=new unsigned char[ct_len];
+	ciphertext=(unsigned char*)malloc(ct_len);
 
 	ct_ptr=0;
 	EVP_EncryptUpdate(this->ctx, &ciphertext[ct_ptr], &nc, plaintext, msg_len);
@@ -65,11 +65,8 @@ string Sym_Encryption::sym_encrypt(const unsigned char* sym_key,
 	for (unsigned int i=0; i<s_cipher.length(); i++)
 		printbyte(s_cipher.at(i));
 
-	delete[] plaintext;
-	delete[] ciphertext;
-	//if (EVP_CIPHER_CTX_cleanup(this->ctx)==0)
-		//sys_err("Context deallocation error!");
-
+	free(plaintext);
+	free(ciphertext);
 	return s_cipher;
 }
 
@@ -86,11 +83,9 @@ void Sym_Encryption::sym_decrypt(const unsigned char* sym_key, const string ciph
 //unsigned char* cipher;
 	
 	//assegno una zona di memoria al plaintext
-	msg_len = 3* sizeof(int) + P_KEY_LENGTH;
-	plaintext=new unsigned char[msg_len];
-	bzero(plaintext, msg_len);
-	
-
+	msg_len = 3* sizeof(int) + P_KEY_LENGTH+8;
+	plaintext=(unsigned char*)malloc(msg_len);
+	//bzero(plaintext, msg_len);
 
 	//decifro
 	EVP_DecryptInit(this->ctx, EVP_des_ecb(), sym_key, NULL);
@@ -124,12 +119,9 @@ void Sym_Encryption::sym_decrypt(const unsigned char* sym_key, const string ciph
 	memcpy(nonce, &plaintext[pt_ptr], sizeof(int));
 	pt_ptr+=sizeof(int);
 	
-	//asym_key.insert(0, (char*)&plaintext[pt_ptr], P_KEY_LENGTH);
-	asym_key.assign((const char *)&plaintext[pt_ptr], P_KEY_LENGTH);
-	
-	//delete[] plaintext;
-	//if (EVP_CIPHER_CTX_cleanup(this->ctx)==0)
-		//sys_err("Context deallocation error!");
-	
+//	asym_key.insert(0, &((const char)plaintext[pt_ptr]), P_KEY_LENGTH);
+	asym_key.assign((const char*)&plaintext[pt_ptr], P_KEY_LENGTH);
+
+	free(plaintext);
 	return;
 }
