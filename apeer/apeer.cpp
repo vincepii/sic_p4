@@ -3,6 +3,7 @@
 #include <fstream>
 #include "../include/asym_enc.h"
 #include "../include/encryption.h"
+# include <openssl/sha.h>
 
 using namespace std;
 
@@ -73,7 +74,7 @@ int main (int argc, char* argv[])
 	int as_b_nonce;
 	//int as_cipher_ll;
 	string as_cipher;
-	//unsigned char* as_plain;
+	unsigned char* shared_key;
 	
 	cout << "[A]: Running..." << endl;
 
@@ -84,8 +85,8 @@ int main (int argc, char* argv[])
 	cout << "[A]: inviato M1" << endl;
 
 	//Creazione e invio M2
-	srand(13);
-	Na = rand() % 100 + 1;
+	srand( time (NULL) );
+	Na = rand() % 1000 + 1;
 	Mess M2(A_ID, B_ID, Na, "");
 	M2.send_mes(kdc_sd);
 	
@@ -130,9 +131,10 @@ int main (int argc, char* argv[])
 	as_k_file.write(B_asym_key.data(), B_asym_key.length());
 	as_k_file.close();
 
+	close(kdc_sd);
+
 	//creazione ed invio M6
-	srand(8);
-	as_a_nonce = rand() % 100 + 1;
+	as_a_nonce = rand() % 1000 + 1;
 	As_enc ae_M6(B_PUB_KEY_FILE, "");
 
 	ae_M6.asym_encr(A_ID, B_ID, as_a_nonce);
@@ -189,6 +191,12 @@ int main (int argc, char* argv[])
 	//creazione della chiave di sessione usando as_a_nonce e as_b_nonce
 
 	cout << "Ya: " << as_a_nonce << " Yb: " << as_b_nonce << endl;
+
+	cout << "Protocollo completato, chiave di sessione stabilita" << endl;
+
+	//calcolare hash dei nonce Ya e Yb e scambiare un file con la chiave
+
+	close(b_sd);
 
 	return 0;
 }

@@ -79,7 +79,7 @@ int main (int argc, char* argv[])
 	ofstream as_k_file;
 	string as_cipher;
 	//int as_cipher_ll = 0;
-	//unsigned char* as_plain;
+	unsigned char* shared_key;
 	int as_a_nonce = 0;
 	int as_b_nonce = 0;
 	
@@ -99,8 +99,8 @@ int main (int argc, char* argv[])
 	}
 
 	//creazione ed invio del messaggio M4
-	srand(9);
-	Nb = rand() % 100 + 1;
+	srand( time (NULL)  + 10);
+	Nb = rand() % 1000 + 1;
 	Mess M4(B_ID, A, Nb, "");
 	M4.send_mes(kdc_socket);
 	
@@ -146,6 +146,8 @@ int main (int argc, char* argv[])
 	as_k_file.write(A_asym_key.data(), A_asym_key.length());
 	as_k_file.close();
 
+	close(kdc_socket);
+
 //sleep(600);
 
 	//Ricezione di M6 e controlli sugli ID
@@ -176,8 +178,7 @@ int main (int argc, char* argv[])
 	}
 
 	//Creazione del crittogramma da inviare in M7
-	srand(4);
-	as_b_nonce = rand() % 100 + 1;
+	as_b_nonce = rand() % 1000 + 1;
 	As_enc ae_M7(A_PUB_KEY_FILE, "");
 	ae_M7.asym_encr(B_ID, A, as_a_nonce, as_b_nonce);
 	//as_cipher_ll = strlen((const char *)ae_M7.getCipher());
@@ -224,9 +225,14 @@ int main (int argc, char* argv[])
 
 	//calcolare la chiave di sessione usando as_a_nonce e as_b_nonce
 
+	close(curr_sd);
+	close(rec_socket);
+
 	cout << "Ya: " << as_a_nonce << " Yb: " << as_b_nonce << endl;
 
 	cout << "Protocollo completato, chiave di sessione stabilita" << endl;
+
+	//calcolare hash dei nonce Ya e Yb e scambiare un file con la chiave
 
 	return 0;
 }

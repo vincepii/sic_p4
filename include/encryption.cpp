@@ -61,9 +61,9 @@ string Sym_Encryption::sym_encrypt(const unsigned char* sym_key,
 	
 	s_cipher.insert(0,	(char*)ciphertext, ct_ptr);
 	
-	printf("Ciphertext: \n");
-	for (unsigned int i=0; i<s_cipher.length(); i++)
-		printbyte(s_cipher.at(i));
+//	printf("Ciphertext: \n");
+//	for (unsigned int i=0; i<s_cipher.length(); i++)
+//		printbyte(s_cipher.at(i));
 
 	free(plaintext);
 	free(ciphertext);

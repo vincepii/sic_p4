@@ -94,12 +94,12 @@ void* body(void* arg){
 	string public_key;
 	string cipher;
 
-	cout << "[KDC]: Thread Running..." << endl;
+	cout << "[KDC]: Thread started..." << endl;
 
 	//ricezione messaggio (sono del tipo A, B, Na)
 	Mess M2_M4(0,0,0,"");
 	M2_M4.receive_mes(sd);
-	M2_M4.print();
+	//M2_M4.print();
 	
 	cout << "[KDC]: ricevuto M2/M4" << endl;
 	
@@ -117,7 +117,7 @@ void* body(void* arg){
 	if(!search_public_key(dst, public_key))
 		sys_err("Errore ricerca chiave pubblica di un peer!");
 
-cout<<"pk_l: "<<public_key<<endl;
+	//cout<<"pk_l: "<<public_key<<endl;
 		
 	//cifra un messaggio contenente A, B, Na, eB usando la shared_key	
 	Sym_Encryption encr_obj;
@@ -127,7 +127,7 @@ cout<<"pk_l: "<<public_key<<endl;
 	//invia un messaggio contenente A, B e il cipher {A, B, Na, eB} cifrato con la shared_key
 	Mess M3_M5(src, dst, 0, cipher);
 	M3_M5.send_mes(sd);
-	M3_M5.print_hex();
+	//M3_M5.print_hex();
 	
 	cout << "[KDC]: inviato M3/M5" << endl;
 	
@@ -152,6 +152,7 @@ cout<<"pk_l: "<<public_key<<endl;
 	 */
 
 	//fine thread gestore
+	close(sd);
 	return 0;
 }
 
