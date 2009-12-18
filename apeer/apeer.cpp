@@ -13,8 +13,6 @@ using namespace std;
 #define PRIV_KEY_FILE "privkey.pem"
 #define B_PUB_KEY_FILE "B_pubkey.pem"
 
-void hsh(int a, int b, unsigned char* sk);
-
 int main (int argc, char* argv[])
 {
 	//-------------------------------------------------------------------------
@@ -196,43 +194,23 @@ int main (int argc, char* argv[])
 
 	cout << "Protocollo completato, chiave di sessione stabilita" << endl;
 
-	//calcolare hash dei nonce Ya e Yb e scambiare un file con la chiave
+	//chiave: hash sugli interi
+	int hash_len;
+	hsh(as_a_nonce, as_b_nonce, "sha1", &shared_key, &hash_len);
+//	for (int i = 0; i < hash_len; i++){
+//		printbyte(shared_key[i]);
+//	}
+//	printf("\n");
 
-	//chiave: hash su 320 bit
-	hsh(as_a_nonce, as_b_nonce, shared_key);
+	string ciphertxt;
+	const char* plain = "That is not dead which can eternal lie, "
+				"And with strange aeons even death may die.";
+	ciphertxt = generic_encrypt(shared_key, (unsigned char *)plain, strlen(plain) + 1);
+
+	Mess M9(A_ID, B_ID, 0, ciphertxt);
+	M9.send_mes(b_sd);
 
 	close(b_sd);
 
 	return 0;
-}
-
-void hsh(int a, int b, unsigned char* sk){
-	EVP_MD_CTX md_ctx;
-	const EVP_MD* md;
-	//unsigned char* buf;
-	int ptr = 0;
-	unsigned char md_value[EVP_MAX_MD_SIZE];
-	unsigned int md_len;
-
-	sk = new unsigned char[2 * sizeof(int)];
-	memcpy(&sk[ptr], (const void *)&a, sizeof(int));
-	ptr += sizeof(int);
-	memcpy(&sk[ptr], (const void *)&b, sizeof(int));
-
-	OpenSSL_add_all_digests();
-	md = EVP_get_digestbyname("sha1");
-	if(!md) {
-		printf("Unknown message digest\n");
-		exit(1);
-	}
-	EVP_MD_CTX_init(&md_ctx);
-	EVP_DigestInit_ex(&md_ctx, md, NULL);
-	EVP_DigestUpdate(&md_ctx, sk, 2 * sizeof(int));
-	EVP_DigestFinal_ex(&md_ctx, md_value, &md_len);
-	EVP_MD_CTX_cleanup(&md_ctx);
-
-	printf("Digest is: ");
-	for(unsigned int i = 0; i < md_len; i++) printf("%02x", md_value[i]);
-	printf("\n");
-	return;
 }

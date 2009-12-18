@@ -71,3 +71,104 @@ void select_random_key (unsigned char* k, int b)
 	printbyte(k[b-1]);
 	cout << endl;
 }
+
+void hsh(int a, int b, string hf, unsigned char** sk, int* len){
+	EVP_MD_CTX md_ctx;
+	const EVP_MD* md;
+	unsigned char* buf;
+	int ptr = 0;
+	unsigned char md_value[EVP_MAX_MD_SIZE];
+	unsigned int md_len;
+
+	buf = new unsigned char[2 * sizeof(int)];
+	memcpy(&buf[ptr], (const void *)&a, sizeof(int));
+	ptr += sizeof(int);
+	memcpy(&buf[ptr], (const void *)&b, sizeof(int));
+
+	OpenSSL_add_all_digests();
+	md = EVP_get_digestbyname(hf.data());
+	if(!md) {
+		printf("Unknown message digest\n");
+		exit(1);
+	}
+	EVP_MD_CTX_init(&md_ctx);
+	EVP_DigestInit_ex(&md_ctx, md, NULL);
+	EVP_DigestUpdate(&md_ctx, buf, 2 * sizeof(int));
+	EVP_DigestFinal_ex(&md_ctx, md_value, &md_len);
+
+
+	*sk = new unsigned char[md_len];
+	memcpy(*sk, &md_value[0], md_len);
+	*len = md_len;
+
+	EVP_MD_CTX_cleanup(&md_ctx);
+
+//	for (int i = 0; i < *len; i++){
+//		printbyte(sk[i]);
+//	}
+
+//	printf("Digest is: ");
+//	for(unsigned int i = 0; i < md_len; i++) printf("%02x", md_value[i]);
+//	printf("\n");
+	return;
+}
+
+string generic_encrypt(unsigned char* k, unsigned char* msg, int msg_ll)
+{
+	unsigned char* ciphertext;
+	int ct_len;
+	int nc;
+	string str;
+
+	EVP_CIPHER_CTX* ctx = (EVP_CIPHER_CTX *)malloc(sizeof(EVP_CIPHER_CTX));
+	EVP_CIPHER_CTX_init(ctx);
+	EVP_EncryptInit(ctx, EVP_des_ecb(), k, NULL);
+
+	ct_len = msg_ll + EVP_CIPHER_CTX_block_size(ctx);
+	ciphertext = (unsigned char *)malloc(ct_len);
+
+	/* cifratura in un colpo */
+	EVP_EncryptUpdate(ctx, ciphertext, &nc, msg, msg_ll);
+	/*contesto, crittogramma (memoria opportunamente allocata), parametro out
+	 * del numero di byte scritti, messaggio da cifrare, lunghezza del plaintext*/
+
+	EVP_EncryptFinal(ctx, &ciphertext[nc], &nc);
+
+//	cout << "Ciphertext: " << endl;
+//	for (int i = 0; i < ct_len; i++){
+//		printbyte(ciphertext[i]);
+//	}
+//	cout << endl;
+
+	str.assign((const char *)ciphertext, ct_len);
+	return str;
+}
+
+string generic_decrypt(unsigned char* k, unsigned char* cipher, int msg_ll)
+{
+	unsigned char* plaintext;
+	int nc;
+	string str;
+
+	EVP_CIPHER_CTX* ctx = (EVP_CIPHER_CTX *)malloc(sizeof(EVP_CIPHER_CTX));
+
+	plaintext = (unsigned char*)malloc(msg_ll);
+	bzero(plaintext, msg_ll);
+
+	EVP_CIPHER_CTX_init(ctx);
+	EVP_DecryptInit(ctx, EVP_des_ecb(), k, NULL);
+
+//	cout << "Ciphertext:" << endl;
+//
+//	for (int i = 0; i < length; i++){
+//		printbyte(r[i]);
+//	}
+//	cout << endl << endl;
+
+	EVP_DecryptUpdate(ctx, plaintext, &nc, cipher, msg_ll);
+	EVP_DecryptFinal(ctx, plaintext, &nc);
+	//cout << "Plaintext:" << endl << plaintext << endl;
+	str.assign((const char *)plaintext, msg_ll);
+
+	return str;
+}
