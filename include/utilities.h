@@ -79,7 +79,7 @@ void printbyte (char b);
 
 void select_random_key (unsigned char* k, int b);
 
-void hsh(int a, int b, string hf,unsigned char** sk, int* len);
+void hsh(int a, int b, string hf,unsigned char** shared_key, int* hash_len);
 
 string generic_encrypt(unsigned char* k, unsigned char* msg, int msg_ll);
 

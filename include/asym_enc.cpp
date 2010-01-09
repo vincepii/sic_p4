@@ -45,13 +45,7 @@ int As_enc::asym_encr(int src_id, int dst_id, int nonce1)
 				"" << RSA_size(pubkey) << endl;
 		user_err("Plaintext too large");
 	}
-	//while (check < RSA_size(pubkey) ){
-		check = RSA_public_encrypt(dim, from, dest, pubkey, RSA_PKCS1_OAEP_PADDING);
-		//check = RSA_public_encrypt(dim, from, dest, pubkey, RSA_NO_PADDING);
-		//check = RSA_public_encrypt(dim, from, dest, pubkey, RSA_PKCS1_PADDING);
-	//}
-//	cout << "CHECK: " << check << endl;
-//	cout << "RSA_size()" << RSA_size(pubkey) << endl;
+	check = RSA_public_encrypt(dim, from, dest, pubkey, RSA_PKCS1_OAEP_PADDING);
 
 	if (check < dim || check == -1){
 		cout << ERR_error_string(ERR_get_error(), NULL) << endl;
@@ -119,7 +113,6 @@ int As_enc::asym_encr(int src_id, int dst_id, int nonce1, int nonce2)
 //	cout << "RSA_size()" << RSA_size(pubkey) << endl;
 
 	if (check < dim || check == -1) {
-		//cout << ERR_error_string(ERR_get_error(), NULL) << endl;
 		ERR_load_crypto_strings();
 		char errbuf[180];
 		char *buf=errbuf;
@@ -169,16 +162,11 @@ int As_enc::asym_decr(string ctxt)
 
 	dest = new unsigned char[RSA_size(privkey)];
 	bzero(dest, RSA_size(privkey));
-	//this->plain = new unsigned char[16];
-	//bzero(this->plain, 16);
-	//dim = cipher_length;
+
 	dim = RSA_size(privkey);
 	check = RSA_private_decrypt(dim, from, dest, privkey, RSA_PKCS1_OAEP_PADDING);
-	//check = RSA_private_decrypt(dim, from, dest, privkey, RSA_NO_PADDING);
-	//check = RSA_private_decrypt(dim, from, dest, privkey, RSA_PKCS1_PADDING);
 
 	if (check == -1) {
-		//cout << ERR_error_string(ERR_get_error(), NULL) << endl;
 		ERR_load_crypto_strings();
 		char errbuf[180];
 		char *buf=errbuf;
@@ -189,7 +177,6 @@ int As_enc::asym_decr(string ctxt)
 	}
 
 	this->plain.assign((const char *)dest, dim);
-	//this->print_plain(3);
 	delete[] dest;
 	RSA_free(privkey);
 
@@ -237,12 +224,3 @@ string As_enc::getPlain()
 {
 	return this->plain;
 }
-
-/*As_enc::~As_enc()
-{
-	//if (cipher != NULL)
-		delete[] cipher;
-	//if (plain != NULL)
-		delete[] plain;
-}
-*/

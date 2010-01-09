@@ -78,7 +78,6 @@ int main (int argc, char* argv[])
 	ifstream kfile;
 	ofstream as_k_file;
 	string as_cipher;
-	//int as_cipher_ll = 0;
 	unsigned char* shared_key = NULL;
 	int as_a_nonce = 0;
 	int as_b_nonce = 0;
@@ -120,7 +119,6 @@ int main (int argc, char* argv[])
 	}
 
 	//recupero del ciphertext e della chiave simmetrica da file (M5)
-	//cipher.assign((const char*)M5.getCipher());
 	cipher = M5.getCipher();
 
 	kfile.open(SYM_KEY_FILE, ios::in | ios::binary);
@@ -148,8 +146,6 @@ int main (int argc, char* argv[])
 
 	close(kdc_socket);
 
-//sleep(600);
-
 	//Ricezione di M6 e controlli sugli ID
 	Mess M6(0,0,0,"");
 	M6.receive_mes(curr_sd);
@@ -157,7 +153,6 @@ int main (int argc, char* argv[])
 	check1 = M6.getSrc_id();
 	check2 = M6.getDest_id();
 	as_cipher = M6.getCipher();
-	//as_cipher_ll = M6.getCipher_ll();
 
 	cout << "[B]: ricevuto M6" << endl;
 	if (check1 != A || check2 != B_ID){
@@ -181,7 +176,6 @@ int main (int argc, char* argv[])
 	as_b_nonce = rand() % 1000 + 1;
 	As_enc ae_M7(A_PUB_KEY_FILE, "");
 	ae_M7.asym_encr(B_ID, A, as_a_nonce, as_b_nonce);
-	//as_cipher_ll = strlen((const char *)ae_M7.getCipher());
 
 	//Creazione ed invio del messaggio M7
 	Mess M7(B_ID, A, 0, ae_M7.getCipher());
@@ -204,16 +198,10 @@ int main (int argc, char* argv[])
 
 	//decifratura del cipher di M8
 	as_cipher = M8.getCipher();
-	//as_cipher_ll = M8.getCipher_ll();
 
 	As_enc ae_M8("", PRIV_KEY_FILE);
 	ae_M8.asym_decr(as_cipher);
 	ae_M8.extract_integers(&check1, &check2, &check3, &check4);
-	//as_plain = ae_M8.getPlain();
-	//check1 = as_plain[0];
-	//check2 = as_plain[sizeof(int)];
-	//check3 = as_plain[2 * sizeof(int)];
-	//check4 = as_plain[3 * sizeof(int)];
 
 	if (check1 != A || check2 !=B_ID ||
 			check3 != as_b_nonce || check4 != as_a_nonce){
@@ -223,13 +211,11 @@ int main (int argc, char* argv[])
 		return -1;
 	}
 
-	//calcolare la chiave di sessione usando as_a_nonce e as_b_nonce
-
 	cout << "Ya: " << as_a_nonce << " Yb: " << as_b_nonce << endl;
 
-	cout << "Protocollo completato, chiave di sessione stabilita" << endl;
 
-	//calcolare hash dei nonce Ya e Yb e scambiare un file con la chiave
+
+	//calcolo della chiave come hash dei nonce Ya e Yb
 
 	int hash_len;
 	hsh(as_a_nonce, as_b_nonce, "sha1", &shared_key, &hash_len);
@@ -238,6 +224,9 @@ int main (int argc, char* argv[])
 //	}
 //	printf("\n");
 
+	cout << "Protocollo completato, chiave di sessione stabilita" << endl;
+
+	//ricezione messaggio cifrato con la chiave di sessione
 	Mess M9(0,0,0,"");
 	M9.receive_mes(curr_sd);
 	int msg_len = M9.getCipher().size();

@@ -57,8 +57,12 @@ int main (int argc, char* argv[])
 
 	/*
 	 * Operazioni del peer A:
-	 * 1. Invio di un messaggio a B per iniziare la richiesta della chiave pubblica
-	 * 2. Invio di un messaggio alla KDC
+	 * 1. Invia M1 a B per sollecitare il recupero della chiave pubblica
+	 * 2. Invia M2 alla KDC per ricevere la chiave pubblica di B
+	 * 3. Riceve M3 da KDC
+	 * 4. Invia M6
+	 * 5. Riceve M7
+	 * 6. Invia M8
 	 */
 
 	int check1 = 0;
@@ -104,7 +108,6 @@ int main (int argc, char* argv[])
 		cout << check2 << endl;
 		return -1;
 	}
-	//cipher.assign((const char *)M3.getCipher());
 	cipher = M3.getCipher();
 	kfile.open(SYM_KEY_FILE, ios::in | ios::binary);
 	if (!kfile.is_open())
@@ -125,7 +128,6 @@ int main (int argc, char* argv[])
 		return -1;
 	}
 
-//cout << B_asym_key << endl;
 	as_k_file.open(B_PUB_KEY_FILE, ios::out | ios::binary);
 	if (!as_k_file.is_open()) sys_err ("Unable to create asym key file");
 	as_k_file.write(B_asym_key.data(), B_asym_key.length());
@@ -138,7 +140,6 @@ int main (int argc, char* argv[])
 	As_enc ae_M6(B_PUB_KEY_FILE, "");
 
 	ae_M6.asym_encr(A_ID, B_ID, as_a_nonce);
-	//as_cipher_ll = strlen((const char *)ae_M6.getCipher());
 
 	Mess M6(A_ID, B_ID, 0, ae_M6.getCipher());
 	M6.send_mes(b_sd);
@@ -159,18 +160,10 @@ int main (int argc, char* argv[])
 	}
 
 	as_cipher = M7.getCipher();
-	//as_cipher = (unsigned char *)M7.getCipher().c_str();
-	//as_cipher_ll = M7.getCipher_ll();
 
 	As_enc ae_M7("", PRIV_KEY_FILE);
 	ae_M7.asym_decr(as_cipher);
 	ae_M7.extract_integers(&check1, &check2, &check3, &as_b_nonce);
-
-//	as_plain = ae_M7.getPlain();
-//	check1 = as_plain[0];
-//	check2 = as_plain[1 * sizeof(int)];
-//	check3 = as_plain[2 * sizeof(int)];
-//	as_b_nonce = as_plain[3 * sizeof(int)];
 
 	if (check1 != B_ID || check2 != A_ID || check3 != as_a_nonce){
 		cout << "[A]: ciphertext di M8 con src_id " << check1;
@@ -181,7 +174,6 @@ int main (int argc, char* argv[])
 	//creazione e invio M8
 	As_enc ae_M8(B_PUB_KEY_FILE, "");
 	ae_M8.asym_encr(A_ID, B_ID, as_b_nonce, as_a_nonce);
-	//as_cipher_ll = strlen((const char *)ae_M8.getCipher());
 
 	Mess M8(A_ID, B_ID, 0, ae_M8.getCipher());
 	M8.send_mes(b_sd);
@@ -192,7 +184,7 @@ int main (int argc, char* argv[])
 
 	cout << "Ya: " << as_a_nonce << " Yb: " << as_b_nonce << endl;
 
-	cout << "Protocollo completato, chiave di sessione stabilita" << endl;
+
 
 	//chiave: hash sugli interi
 	int hash_len;
@@ -201,6 +193,8 @@ int main (int argc, char* argv[])
 //		printbyte(shared_key[i]);
 //	}
 //	printf("\n");
+
+	cout << "Protocollo completato, chiave di sessione stabilita" << endl;
 
 	string ciphertxt;
 	const char* plain = "That is not dead which can eternal lie, "

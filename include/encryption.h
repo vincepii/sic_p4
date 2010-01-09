@@ -9,12 +9,8 @@
 
 class Sym_Encryption{
 	private:
-		//ricordarsi di fare il distr. perchè il 
-		//contesto va sempre riaggiornato e per ripulire la memoria
-
 		//context
 		EVP_CIPHER_CTX* ctx;
-
 
 	public:
 		//constructor
@@ -23,14 +19,12 @@ class Sym_Encryption{
 		//destructor
 		~Sym_Encryption();
 		
-		//encryption between a peer and kdc
 		/**
 		 * chiave simmetrica, ids e nonce, chiave asimm
 		 */
 		string sym_encrypt(const unsigned char*, int, int, int, const unsigned char*);
 		
-		//decryption beetween a peer and kdc
-		/*
+		/**
 		 * Chiave, cipher, parametri out (ids, nonce, chiave)
 		 */
 		void sym_decrypt(const unsigned char*, const string, int*, int*, int*, string&);
