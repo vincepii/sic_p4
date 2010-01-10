@@ -199,7 +199,9 @@ int main (int argc, char* argv[])
 	string ciphertxt;
 	const char* plain = "That is not dead which can eternal lie, "
 				"And with strange aeons even death may die.";
-	ciphertxt = generic_encrypt(shared_key, (unsigned char *)plain, strlen(plain) + 1);
+	Sym_Encryption test_mess;
+	ciphertxt = test_mess.generic_encrypt(shared_key,
+			(unsigned char *)plain, strlen(plain) + 1);
 
 	Mess M9(A_ID, B_ID, 0, ciphertxt);
 	M9.send_mes(b_sd);

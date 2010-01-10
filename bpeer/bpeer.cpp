@@ -230,7 +230,9 @@ int main (int argc, char* argv[])
 	Mess M9(0,0,0,"");
 	M9.receive_mes(curr_sd);
 	int msg_len = M9.getCipher().size();
-	string plain = generic_decrypt(shared_key, (unsigned char *) M9.getCipher().data(), msg_len);
+	Sym_Encryption test_mess;
+	string plain = test_mess.generic_decrypt(shared_key,
+			(unsigned char *) M9.getCipher().data(), msg_len);
 	cout << "Messaggio ricevuto:" << endl << plain << endl;
 
 	close(curr_sd);
