@@ -92,7 +92,7 @@ int main (int argc, char* argv[])
 
 	cout << "[B]: ricevuto M1" << endl;
 	if (B != B_ID){
-		// A non vuole comunicare con me
+		// A non vuole comunicare con B
 		cout << "[B]: ricevuto M1 con dest_id " << B << endl;
 		return -1;
 	}

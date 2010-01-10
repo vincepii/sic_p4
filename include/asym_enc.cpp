@@ -5,8 +5,6 @@ As_enc::As_enc(string pubfile, string privfile)
 {
 	this->pubkey_file = pubfile;
 	this->privkey_file = privfile;
-	//this->cipher = "";
-	//this->plain = "";
 }
 
 int As_enc::asym_encr(int src_id, int dst_id, int nonce1)
@@ -104,13 +102,7 @@ int As_enc::asym_encr(int src_id, int dst_id, int nonce1, int nonce2)
 				"" << RSA_size(pubkey) << endl;
 		user_err("Plaintext too large");
 	}
-	//while (check < RSA_size(pubkey) ){
-		check = RSA_public_encrypt(dim, from, dest, pubkey, RSA_PKCS1_OAEP_PADDING);
-		//check = RSA_public_encrypt(dim, from, dest, pubkey, RSA_NO_PADDING);
-		//check = RSA_public_encrypt(dim, from, dest, pubkey, RSA_PKCS1_PADDING);
-	//}
-//	cout << "CHECK: " << check << endl;
-//	cout << "RSA_size()" << RSA_size(pubkey) << endl;
+	check = RSA_public_encrypt(dim, from, dest, pubkey, RSA_PKCS1_OAEP_PADDING);
 
 	if (check < dim || check == -1) {
 		ERR_load_crypto_strings();
