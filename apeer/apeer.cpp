@@ -133,10 +133,11 @@ int main (int argc, char* argv[])
 	As_enc ae_M6(B_PUB_KEY_FILE, "");
 	ae_M6.asym_encr(A_ID, B_ID, as_a_nonce);
 	//as_cipher_ll = strlen((const char *)ae_M6.getCipher());
-
+cout<<"Ya= " <<as_a_nonce<<endl;
 	Mess M6(A_ID, B_ID, 0, ae_M6.getCipher());
 	M6.send_mes(b_sd);
-	
+M6.print_hex();
+cout<<ae_M6.getCipher().length()<<endl;
 	cout << "[A]: inviato M6" << endl;
 
 	//ricezione M7

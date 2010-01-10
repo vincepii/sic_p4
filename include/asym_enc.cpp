@@ -21,7 +21,7 @@ int As_enc::asym_encr(int src_id, int dst_id, int nonce1)
 
 
 
-	pubk_file = fopen(this->pubkey_file.c_str(), "rb");
+	pubk_file = fopen(this->pubkey_file.c_str(), "r");
 	if (pubk_file == NULL) sys_err("Cannot find public key file");
 	pubkey = PEM_read_RSA_PUBKEY(pubk_file, NULL, NULL, NULL);
 	if (pubkey == NULL) sys_err("Cannot create RSA object with public key");
@@ -30,7 +30,7 @@ int As_enc::asym_encr(int src_id, int dst_id, int nonce1)
 	dim = 3 * sizeof(int);
 
 	//preparazione del buffer da cifrare
-	from = new unsigned char[dim];
+	from = new unsigned char[dim+1];
 	bzero(from, dim);
 
 	memcpy(&from[ptr], &src_id, sizeof(int));
@@ -39,8 +39,8 @@ int As_enc::asym_encr(int src_id, int dst_id, int nonce1)
 	ptr += sizeof(int);
 	memcpy(&from[ptr], &nonce1, sizeof(int));
 
-	dest = new unsigned char[RSA_size(pubkey)];
-	bzero(dest, RSA_size(pubkey));
+	dest = new unsigned char[RSA_size(pubkey)+1];
+	bzero(dest, RSA_size(pubkey)+1);
 
 	check = RSA_public_encrypt(dim, from, dest, pubkey, RSA_PKCS1_OAEP_PADDING);
 
@@ -115,7 +115,7 @@ int As_enc::asym_decr(string ctxt)
 	unsigned char* dest;
 	unsigned char* from;
 
-	prik_file = fopen(this->privkey_file.c_str(), "rb");
+	prik_file = fopen(this->privkey_file.c_str(), "r");			//controlla con r
 	if (prik_file == NULL) sys_err("Cannot open private key file");
 	privkey = PEM_read_RSAPrivateKey(prik_file, NULL, NULL, NULL);
 	if (privkey == 0) sys_err("Cannot create RSA object with private key");
@@ -123,12 +123,17 @@ int As_enc::asym_decr(string ctxt)
 
 	from = (unsigned char *)ctxt.data();
 
-	dest = new unsigned char[RSA_size(privkey)];
-	bzero(dest, RSA_size(privkey));
+	dest = new unsigned char[RSA_size(privkey)+1];		//plaintext grande come la priv key????
+	bzero(dest, RSA_size(privkey)+1);
 	//this->plain = new unsigned char[16];
 	//bzero(this->plain, 16);
 	//dim = cipher_length;
 	dim = ctxt.length();
+cout<<"ctxt: "<<endl;
+for(int i=0; i<ctxt.length(); i++)
+	printbyte(ctxt.at(i));
+cout<<endl;
+cout<<"dim: "<<dim<<endl;
 	check = RSA_private_decrypt(dim, from, dest, privkey, RSA_PKCS1_OAEP_PADDING);
 
 	if (check == -1) {
@@ -136,7 +141,9 @@ int As_enc::asym_decr(string ctxt)
 		sys_err ("Private key decryption error");
 	}
 
+
 	this->plain.assign((const char *)dest);
+cout<<"p_ass:"<<this->plain.length()<<endl;
 	delete[] dest;
 	RSA_free(privkey);
 
@@ -146,6 +153,11 @@ int As_enc::asym_decr(string ctxt)
 void As_enc::extract_integers(int* a, int* b, int* c)
 {
 	unsigned char* p = (unsigned char *)this->plain.data();
+	cout<<"pl:"<<this->plain.length()<<endl;
+	cout<<"p="<<endl;
+	for(int i=0; i<this->plain.length(); i++)
+		printbyte(p[i]);
+	cout<<endl;
 	memcpy(a, &p[0], sizeof(int));
 	memcpy(b, &p[1 * sizeof(int)], sizeof(int));
 	memcpy(c, &p[2 * sizeof(int)], sizeof(int));

@@ -58,7 +58,7 @@ string Sym_Encryption::sym_encrypt(const unsigned char* sym_key,
 
 	EVP_EncryptFinal(this->ctx, &ciphertext[ct_ptr], &nc);
 	ct_ptr+=nc;
-	
+cout << "Byte cifrati: " << ct_ptr << endl;	
 	s_cipher.insert(0,	(char*)ciphertext, ct_ptr);
 	
 	printf("Ciphertext: \n");
@@ -102,11 +102,11 @@ void Sym_Encryption::sym_decrypt(const unsigned char* sym_key, const string ciph
 //EVP_DecryptUpdate(this->ctx, &plaintext[pt_ptr], &nd, &cipher[pt_ptr], ct_len);
 	pt_ptr+=nd;
 //}
-cout << "Byte decifrati: " << pt_ptr << endl;
 
 //pt_ptr = 0;
 	EVP_DecryptFinal(this->ctx, &plaintext[pt_ptr], &nd);
 	pt_ptr+=nd;
+cout << "Byte decifrati: " << pt_ptr << endl;
 
 
 	pt_ptr=0;	//reinizializzo per lettura numero byte giusti dei vari campi	
