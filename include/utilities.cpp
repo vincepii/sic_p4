@@ -71,3 +71,44 @@ void select_random_key (unsigned char* k, int b)
 	printbyte(k[b-1]);
 	cout << endl;
 }
+
+void hsh(int a, int b, string hf, unsigned char** sk, int* len){
+	EVP_MD_CTX md_ctx;
+	const EVP_MD* md;
+	unsigned char* buf;
+	int ptr = 0;
+	unsigned char md_value[EVP_MAX_MD_SIZE];
+	unsigned int md_len;
+
+	buf = new unsigned char[2 * sizeof(int)];
+	memcpy(&buf[ptr], (const void *)&a, sizeof(int));
+	ptr += sizeof(int);
+	memcpy(&buf[ptr], (const void *)&b, sizeof(int));
+
+	OpenSSL_add_all_digests();
+	md = EVP_get_digestbyname(hf.data());
+	if(!md) {
+		printf("Unknown message digest\n");
+		exit(1);
+	}
+	EVP_MD_CTX_init(&md_ctx);
+	EVP_DigestInit_ex(&md_ctx, md, NULL);
+	EVP_DigestUpdate(&md_ctx, buf, 2 * sizeof(int));
+	EVP_DigestFinal_ex(&md_ctx, md_value, &md_len);
+
+
+	*sk = new unsigned char[md_len];
+	memcpy(*sk, &md_value[0], md_len);
+	*len = md_len;
+
+	EVP_MD_CTX_cleanup(&md_ctx);
+
+//	for (int i = 0; i < *len; i++){
+//		printbyte(sk[i]);
+//	}
+
+//	printf("Digest is: ");
+//	for(unsigned int i = 0; i < md_len; i++) printf("%02x", md_value[i]);
+//	printf("\n");
+	return;
+}

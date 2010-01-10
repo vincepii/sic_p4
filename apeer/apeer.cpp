@@ -3,6 +3,7 @@
 #include <fstream>
 #include "../include/asym_enc.h"
 #include "../include/encryption.h"
+# include <openssl/sha.h>
 
 using namespace std;
 
@@ -56,8 +57,12 @@ int main (int argc, char* argv[])
 
 	/*
 	 * Operazioni del peer A:
-	 * 1. Invio di un messaggio a B per iniziare la richiesta della chiave pubblica
-	 * 2. Invio di un messaggio alla KDC
+	 * 1. Invia M1 a B per sollecitare il recupero della chiave pubblica
+	 * 2. Invia M2 alla KDC per ricevere la chiave pubblica di B
+	 * 3. Riceve M3 da KDC
+	 * 4. Invia M6
+	 * 5. Riceve M7
+	 * 6. Invia M8
 	 */
 
 	int check1 = 0;
@@ -73,7 +78,7 @@ int main (int argc, char* argv[])
 	int as_b_nonce;
 	//int as_cipher_ll;
 	string as_cipher;
-	//unsigned char* as_plain;
+	unsigned char* shared_key = NULL;
 	
 	cout << "[A]: Running..." << endl;
 
@@ -84,7 +89,8 @@ int main (int argc, char* argv[])
 	cout << "[A]: inviato M1" << endl;
 
 	//Creazione e invio M2
-	Na = rand() % 100 + 1;
+	srand( time (NULL) );
+	Na = rand() % 1000 + 1;
 	Mess M2(A_ID, B_ID, Na, "");
 	M2.send_mes(kdc_sd);
 	
@@ -102,7 +108,6 @@ int main (int argc, char* argv[])
 		cout << check2 << endl;
 		return -1;
 	}
-	//cipher.assign((const char *)M3.getCipher());
 	cipher = M3.getCipher();
 	kfile.open(SYM_KEY_FILE, ios::in | ios::binary);
 	if (!kfile.is_open())
@@ -122,18 +127,20 @@ int main (int argc, char* argv[])
 				"id " << check2 << " nonce " << check3 << endl;
 		return -1;
 	}
-//cout << B_asym_key << endl;
-//	as_k_file.open(B_PUB_KEY_FILE, ios::out | ios::binary);
-//	if (!as_k_file.is_open()) sys_err ("Unable to create asym key file");
-//	as_k_file.write(B_asym_key.data(), B_asym_key.length());
-//	as_k_file.close();
+
+	as_k_file.open(B_PUB_KEY_FILE, ios::out | ios::binary);
+	if (!as_k_file.is_open()) sys_err ("Unable to create asym key file");
+	as_k_file.write(B_asym_key.data(), B_asym_key.length());
+	as_k_file.close();
+
+	close(kdc_sd);
 
 	//creazione ed invio M6
-	as_a_nonce = rand() % 100 + 1;
+	as_a_nonce = rand() % 1000 + 1;
 	As_enc ae_M6(B_PUB_KEY_FILE, "");
+
 	ae_M6.asym_encr(A_ID, B_ID, as_a_nonce);
-	//as_cipher_ll = strlen((const char *)ae_M6.getCipher());
-cout<<"Ya= " <<as_a_nonce<<endl;
+
 	Mess M6(A_ID, B_ID, 0, ae_M6.getCipher());
 	M6.send_mes(b_sd);
 M6.print_hex();
@@ -154,18 +161,10 @@ cout<<ae_M6.getCipher().length()<<endl;
 	}
 
 	as_cipher = M7.getCipher();
-	//as_cipher = (unsigned char *)M7.getCipher().c_str();
-	//as_cipher_ll = M7.getCipher_ll();
 
 	As_enc ae_M7("", PRIV_KEY_FILE);
 	ae_M7.asym_decr(as_cipher);
 	ae_M7.extract_integers(&check1, &check2, &check3, &as_b_nonce);
-
-//	as_plain = ae_M7.getPlain();
-//	check1 = as_plain[0];
-//	check2 = as_plain[1 * sizeof(int)];
-//	check3 = as_plain[2 * sizeof(int)];
-//	as_b_nonce = as_plain[3 * sizeof(int)];
 
 	if (check1 != B_ID || check2 != A_ID || check3 != as_a_nonce){
 		cout << "[A]: ciphertext di M8 con src_id " << check1;
@@ -176,7 +175,6 @@ cout<<ae_M6.getCipher().length()<<endl;
 	//creazione e invio M8
 	As_enc ae_M8(B_PUB_KEY_FILE, "");
 	ae_M8.asym_encr(A_ID, B_ID, as_b_nonce, as_a_nonce);
-	//as_cipher_ll = strlen((const char *)ae_M8.getCipher());
 
 	Mess M8(A_ID, B_ID, 0, ae_M8.getCipher());
 	M8.send_mes(b_sd);
@@ -186,6 +184,30 @@ cout<<ae_M6.getCipher().length()<<endl;
 	//creazione della chiave di sessione usando as_a_nonce e as_b_nonce
 
 	cout << "Ya: " << as_a_nonce << " Yb: " << as_b_nonce << endl;
+
+
+
+	//chiave: hash sugli interi
+	int hash_len;
+	hsh(as_a_nonce, as_b_nonce, "sha1", &shared_key, &hash_len);
+//	for (int i = 0; i < hash_len; i++){
+//		printbyte(shared_key[i]);
+//	}
+//	printf("\n");
+
+	cout << "Protocollo completato, chiave di sessione stabilita" << endl;
+
+	string ciphertxt;
+	const char* plain = "That is not dead which can eternal lie, "
+				"And with strange aeons even death may die.";
+	Sym_Encryption test_mess;
+	ciphertxt = test_mess.generic_encrypt(shared_key,
+			(unsigned char *)plain, strlen(plain) + 1);
+	test_mess.~Sym_Encryption();
+	Mess M9(A_ID, B_ID, 0, ciphertxt);
+	M9.send_mes(b_sd);
+
+	close(b_sd);
 
 	return 0;
 }

@@ -78,8 +78,7 @@ int main (int argc, char* argv[])
 	ifstream kfile;
 	ofstream as_k_file;
 	string as_cipher;
-	//int as_cipher_ll = 0;
-	//unsigned char* as_plain;
+	unsigned char* shared_key = NULL;
 	int as_a_nonce = 0;
 	int as_b_nonce = 0;
 	
@@ -93,13 +92,14 @@ int main (int argc, char* argv[])
 
 	cout << "[B]: ricevuto M1" << endl;
 	if (B != B_ID){
-		// A non vuole comunicare con me
+		// A non vuole comunicare con B
 		cout << "[B]: ricevuto M1 con dest_id " << B << endl;
 		return -1;
 	}
 
 	//creazione ed invio del messaggio M4
-	Nb = rand() % 100 + 1;
+	srand( time (NULL)  + 10);
+	Nb = rand() % 1000 + 1;
 	Mess M4(B_ID, A, Nb, "");
 	M4.send_mes(kdc_socket);
 	
@@ -119,7 +119,6 @@ int main (int argc, char* argv[])
 	}
 
 	//recupero del ciphertext e della chiave simmetrica da file (M5)
-	//cipher.assign((const char*)M5.getCipher());
 	cipher = M5.getCipher();
 
 	kfile.open(SYM_KEY_FILE, ios::in | ios::binary);
@@ -132,7 +131,7 @@ int main (int argc, char* argv[])
 	Sym_Encryption S5;
 	S5.sym_decrypt((const unsigned char*)sym_key.data(), cipher, &check1,
 			&check2, &check3, A_asym_key);
-
+	S5.~Sym_Encryption();
 	if (check1 != B_ID || check2 != A || check3 != Nb){
 		cout << "[B]: ciphertext di M5 con src_id " << check1 << " dest_"
 				"id " << check2 << " nonce " << check3 << endl;
@@ -140,20 +139,27 @@ int main (int argc, char* argv[])
 	}
 
 	//considero la chiave pubblica di A valida, scrivo il file .pem
-//	as_k_file.open(A_PUB_KEY_FILE, ios::out | ios::binary);
-//	if (!as_k_file.is_open()) sys_err ("Unable to create asym key file");
-//	as_k_file.write(A_asym_key.data(), A_asym_key.length());
-//	as_k_file.close();
+	as_k_file.open(A_PUB_KEY_FILE, ios::out | ios::binary);
+	if (!as_k_file.is_open()) sys_err ("Unable to create asym key file");
+	as_k_file.write(A_asym_key.data(), A_asym_key.length());
+	as_k_file.close();
+
+	close(kdc_socket);
 
 	//Ricezione di M6 e controlli sugli ID
 	Mess M6(0,0,0,"");
 	M6.receive_mes(curr_sd);
+
 	check1 = M6.getSrc_id();
 	check2 = M6.getDest_id();
 	as_cipher = M6.getCipher();
+<<<<<<< HEAD:bpeer/bpeer.cpp
 	//as_cipher_ll = M6.getCipher_ll();
 M6.print_hex();
 cout<<as_cipher.length()<<endl;
+=======
+
+>>>>>>> 07568abe2a3c8c1890e1016358a894fc95157b7f:bpeer/bpeer.cpp
 	cout << "[B]: ricevuto M6" << endl;
 
 	if (check1 != A || check2 != B_ID){
@@ -175,10 +181,9 @@ cout<<"Ya= " <<as_a_nonce<<endl;
 	}
 
 	//Creazione del crittogramma da inviare in M7
-	as_b_nonce = rand() % 100 + 1;
+	as_b_nonce = rand() % 1000 + 1;
 	As_enc ae_M7(A_PUB_KEY_FILE, "");
 	ae_M7.asym_encr(B_ID, A, as_a_nonce, as_b_nonce);
-	//as_cipher_ll = strlen((const char *)ae_M7.getCipher());
 
 	//Creazione ed invio del messaggio M7
 	Mess M7(B_ID, A, 0, ae_M7.getCipher());
@@ -201,16 +206,10 @@ cout<<"Ya= " <<as_a_nonce<<endl;
 
 	//decifratura del cipher di M8
 	as_cipher = M8.getCipher();
-	//as_cipher_ll = M8.getCipher_ll();
 
 	As_enc ae_M8("", PRIV_KEY_FILE);
 	ae_M8.asym_decr(as_cipher);
 	ae_M8.extract_integers(&check1, &check2, &check3, &check4);
-	//as_plain = ae_M8.getPlain();
-	//check1 = as_plain[0];
-	//check2 = as_plain[sizeof(int)];
-	//check3 = as_plain[2 * sizeof(int)];
-	//check4 = as_plain[3 * sizeof(int)];
 
 	if (check1 != A || check2 !=B_ID ||
 			check3 != as_b_nonce || check4 != as_a_nonce){
@@ -220,11 +219,32 @@ cout<<"Ya= " <<as_a_nonce<<endl;
 		return -1;
 	}
 
-	//calcolare la chiave di sessione usando as_a_nonce e as_b_nonce
-
 	cout << "Ya: " << as_a_nonce << " Yb: " << as_b_nonce << endl;
+
+
+
+	//calcolo della chiave come hash dei nonce Ya e Yb
+
+	int hash_len;
+	hsh(as_a_nonce, as_b_nonce, "sha1", &shared_key, &hash_len);
+//	for (int i = 0; i < hash_len; i++){
+//		printbyte(shared_key[i]);
+//	}
+//	printf("\n");
 
 	cout << "Protocollo completato, chiave di sessione stabilita" << endl;
 
+	//ricezione messaggio cifrato con la chiave di sessione
+	Mess M9(0,0,0,"");
+	M9.receive_mes(curr_sd);
+	int msg_len = M9.getCipher().size();
+	Sym_Encryption test_mess;
+	string plain = test_mess.generic_decrypt(shared_key,
+			(unsigned char *) M9.getCipher().data(), msg_len);
+	test_mess.~Sym_Encryption();
+	cout << "Messaggio ricevuto:" << endl << plain << endl;
+
+	close(curr_sd);
+	close(rec_socket);
 	return 0;
 }

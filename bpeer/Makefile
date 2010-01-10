@@ -24,4 +24,4 @@ $(INCLUDE)/comm_layer.o:
 	cd $(INCLUDE) && make comm_layer.o
 
 clean:
-	rm -f $(BIN)/bpeer *.o *~
+	rm -f $(BIN)/bpeer $(BIN)/A_pubkey.pem *.o *~

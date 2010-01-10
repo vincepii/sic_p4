@@ -79,4 +79,6 @@ void printbyte (char b);
 
 void select_random_key (unsigned char* k, int b);
 
+void hsh(int a, int b, string hf,unsigned char** shared_key, int* hash_len);
+
 #endif

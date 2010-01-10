@@ -1,9 +1,9 @@
 #include "encryption.h"
 #include <sstream>
+#include <string>
 
 Sym_Encryption::Sym_Encryption()
 {
-	//context initialization
 	this->ctx=(EVP_CIPHER_CTX*)malloc(sizeof(EVP_CIPHER_CTX));
 	EVP_CIPHER_CTX_init(this->ctx);
 	return;
@@ -20,22 +20,13 @@ Sym_Encryption::~Sym_Encryption()
 string Sym_Encryption::sym_encrypt(const unsigned char* sym_key,
 		int src, int dst, int nonce, const unsigned char* asym_key)
 {
-	unsigned char* ciphertext;
 	int msg_len;
-	int ct_len;
-	int nc;			//numero byte effettivamente cifrati
-	int ct_ptr=0;	/*puntatore alla posizione di chipertext 
-					nella quale inserire i nuovi dati cifrati*/
-	int pt_ptr=0;	/*puntatore alla posizione di plaintext 
-					nella quale inserire i nuovi dati da cifrare*/
+	int pt_ptr = 0;
 	unsigned char* plaintext;
-	
-	//per convertire il ciphertext in una stringa
 	string s_cipher;
 
-	//assegno una zona di memoria al plaintext e lo riempo con i dati che lo compongono
-	msg_len = 3* sizeof(int) + P_KEY_LENGTH;
-	plaintext=(unsigned char*)malloc(msg_len);
+	msg_len = 3 * sizeof(int) + P_KEY_LENGTH;
+	plaintext=(unsigned char *)malloc(msg_len);
 	
 	memcpy(&plaintext[pt_ptr], &src, sizeof(int));
 	pt_ptr+=sizeof(int);
@@ -44,6 +35,7 @@ string Sym_Encryption::sym_encrypt(const unsigned char* sym_key,
 	memcpy(&plaintext[pt_ptr], &nonce, sizeof(int));
 	pt_ptr+=sizeof(int);
 	memcpy(&plaintext[pt_ptr], asym_key, P_KEY_LENGTH);
+<<<<<<< HEAD:include/encryption.cpp
 
 	//cifratura
 	EVP_EncryptInit(this->ctx, EVP_des_ecb(), sym_key, NULL);
@@ -60,33 +52,25 @@ string Sym_Encryption::sym_encrypt(const unsigned char* sym_key,
 	ct_ptr+=nc;
 cout << "Byte cifrati: " << ct_ptr << endl;	
 	s_cipher.insert(0,	(char*)ciphertext, ct_ptr);
+=======
+>>>>>>> 07568abe2a3c8c1890e1016358a894fc95157b7f:include/encryption.cpp
 	
-	printf("Ciphertext: \n");
-	for (unsigned int i=0; i<s_cipher.length(); i++)
-		printbyte(s_cipher.at(i));
+	s_cipher = generic_encrypt((unsigned char*)sym_key, plaintext, msg_len);
 
 	free(plaintext);
-	free(ciphertext);
 	return s_cipher;
 }
 
 void Sym_Encryption::sym_decrypt(const unsigned char* sym_key, const string ciphertext, 
 	int* src, int* dst, int* nonce, string& asym_key)
 {
-	
-	unsigned char* plaintext;
 	int msg_len;
-	int nd;			//numero byte effettivamente decifrati
-	int pt_ptr=0;	/*puntatore alla posizione di plaintext 
-					nella quale inserire i nuovi dati decifrati*/
-//int ct_len = 0;
-//unsigned char* cipher;
+	int pt_ptr = 0;
+	string plain;
 	
-	//assegno una zona di memoria al plaintext
-	msg_len = 3* sizeof(int) + P_KEY_LENGTH+8;
-	plaintext=(unsigned char*)malloc(msg_len);
-	//bzero(plaintext, msg_len);
+	msg_len = 3 * sizeof(int) + P_KEY_LENGTH + 8;
 
+<<<<<<< HEAD:include/encryption.cpp
 	//decifro
 	EVP_DecryptInit(this->ctx, EVP_des_ecb(), sym_key, NULL);
 	
@@ -121,8 +105,63 @@ cout << "Byte decifrati: " << pt_ptr << endl;
 	
 //	asym_key.insert(0, &((const char)plaintext[pt_ptr]), P_KEY_LENGTH);
 	asym_key.assign((const char*)&plaintext[pt_ptr], P_KEY_LENGTH);
+=======
+	plain = generic_decrypt((unsigned char *)sym_key,
+			(unsigned char*) ciphertext.data(), msg_len);
 
-	free(plaintext);
-	
+	pt_ptr = 0;
+	plain.copy((char*)src, sizeof(int), pt_ptr);
+	pt_ptr += sizeof(int);
+
+	plain.copy((char*)dst, sizeof(int), pt_ptr);
+	pt_ptr += sizeof(int);
+
+	plain.copy((char*)nonce, sizeof(int), pt_ptr);
+	pt_ptr += sizeof(int);
+
+	asym_key = plain.substr(pt_ptr, P_KEY_LENGTH);
+>>>>>>> 07568abe2a3c8c1890e1016358a894fc95157b7f:include/encryption.cpp
+
 	return;
+}
+
+string Sym_Encryption::generic_encrypt(unsigned char* k,
+		unsigned char* msg, int msg_ll)
+{
+	unsigned char* ciphertext;
+	int ct_len;
+	int nc;
+	string str;
+
+	EVP_EncryptInit(this->ctx, EVP_des_cbc(), k, NULL);
+
+	ct_len = msg_ll + EVP_CIPHER_CTX_block_size(this->ctx);
+	ciphertext = (unsigned char *)malloc(ct_len);
+
+	EVP_EncryptUpdate(this->ctx, ciphertext, &nc, msg, msg_ll);
+	EVP_EncryptFinal(this->ctx, &ciphertext[nc], &nc);
+
+	str.assign((const char *)ciphertext, ct_len);
+	free (ciphertext);
+
+	return str;
+}
+
+string Sym_Encryption::generic_decrypt(unsigned char* k,
+		unsigned char* cipher, int msg_ll)
+{
+	unsigned char* plaintext;
+	int nc;
+	string str;
+
+	plaintext = (unsigned char*)malloc(msg_ll);
+	bzero(plaintext, msg_ll);
+
+	EVP_DecryptInit(this->ctx, EVP_des_cbc(), k, NULL);
+	EVP_DecryptUpdate(this->ctx, plaintext, &nc, cipher, msg_ll);
+	EVP_DecryptFinal(this->ctx, plaintext, &nc);
+
+	str.assign((const char *)plaintext, msg_ll);
+	free (plaintext);
+	return str;
 }
