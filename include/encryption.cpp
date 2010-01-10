@@ -139,7 +139,7 @@ string Sym_Encryption::generic_encrypt(unsigned char* k,
 	//EVP_CIPHER_CTX* ctx = (EVP_CIPHER_CTX *)malloc(sizeof(EVP_CIPHER_CTX));
 	//EVP_CIPHER_CTX_init(ctx);
 
-	EVP_EncryptInit(this->ctx, EVP_des_ecb(), k, NULL);
+	EVP_EncryptInit(this->ctx, EVP_des_cbc(), k, NULL);
 
 	ct_len = msg_ll + EVP_CIPHER_CTX_block_size(this->ctx);
 	ciphertext = (unsigned char *)malloc(ct_len);
@@ -158,6 +158,7 @@ string Sym_Encryption::generic_encrypt(unsigned char* k,
 //	cout << endl;
 
 	str.assign((const char *)ciphertext, ct_len);
+	free (ciphertext);
 	return str;
 }
 
@@ -174,7 +175,7 @@ string Sym_Encryption::generic_decrypt(unsigned char* k,
 	bzero(plaintext, msg_ll);
 
 	//EVP_CIPHER_CTX_init(ctx);
-	EVP_DecryptInit(this->ctx, EVP_des_ecb(), k, NULL);
+	EVP_DecryptInit(this->ctx, EVP_des_cbc(), k, NULL);
 
 //	cout << "Ciphertext:" << endl;
 //
@@ -187,6 +188,6 @@ string Sym_Encryption::generic_decrypt(unsigned char* k,
 	EVP_DecryptFinal(this->ctx, plaintext, &nc);
 	//cout << "Plaintext:" << endl << plaintext << endl;
 	str.assign((const char *)plaintext, msg_ll);
-
+	free (plaintext);
 	return str;
 }
