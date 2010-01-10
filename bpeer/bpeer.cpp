@@ -96,54 +96,90 @@ int main (int argc, char* argv[])
 		cout << "[B]: ricevuto M1 con dest_id " << B << endl;
 		return -1;
 	}
-
-	//creazione ed invio del messaggio M4
-	srand( time (NULL)  + 10);
-	Nb = rand() % 1000 + 1;
-	Mess M4(B_ID, A, Nb, "");
-	M4.send_mes(kdc_socket);
 	
-	cout << "[B]: inviato M4" << endl;
+	//controllo se il peer ha il file della chiave pubblica del peer che lo contatta
+	//da più di 24 ore. In tal caso deve richiederlo, altrimenti la chiave è ancora valida
+	//e può usare quella che ha.
 
-	//ricezione del messaggio M5 e controlli sugli id
-	Mess M5(0,0,0,"");
-	M5.receive_mes(kdc_socket);
-	check1 = M5.getSrc_id();
-	check2 = M5.getDest_id();
-
-	cout << "[B]: ricevuto M5" << endl;
-	if (check1 != B_ID || check2 != A){
-		cout << "[B]: ricevuto M5 con src_id " << check1 << " e dest_"
-				"id " << check2 << endl;
-		return -1;
+	time_t file_time=0;									//last modified date of the file 
+														//(in seconds from 1970)
+														
+	//get last modified date only if the file exists
+	as_k_file.open(A_PUB_KEY_FILE, ios::in | ios::binary);
+	if (as_k_file.is_open()){
+		printf("leggo attrib\n");
+		//file_time = last_mod_time(A_PUB_KEY_FILE);			//get last modified date
+		//file attribute structure
+		struct stat file_attrib;
+	
+		//get the attributes
+		stat(A_PUB_KEY_FILE, &file_attrib);
+		file_time=file_attrib.st_mtime;
 	}
 
-	//recupero del ciphertext e della chiave simmetrica da file (M5)
-	cipher = M5.getCipher();
+	//get local time
+	time_t actual_time;									//actual time in seconds from 1970
+	time(&actual_time);									//get actual time
+	
+	printf("lst mod time: %s\n", ctime(&file_time));
+	printf("actual time: %s\n", ctime(&actual_time));
 
-	kfile.open(SYM_KEY_FILE, ios::in | ios::binary);
-	if (!kfile.is_open())
-		user_err ("Sym key file not found");
-	getline(kfile, sym_key);
-	kfile.close();
+	srand( time (NULL)  + 10);
 
-	//decifratura del ciphertext (M5)
-	Sym_Encryption S5;
-	S5.sym_decrypt((const unsigned char*)sym_key.data(), cipher, &check1,
-			&check2, &check3, A_asym_key);
-	S5.~Sym_Encryption();
-	if (check1 != B_ID || check2 != A || check3 != Nb){
-		cout << "[B]: ciphertext di M5 con src_id " << check1 << " dest_"
-				"id " << check2 << " nonce " << check3 << endl;
-		return -1;
+	//comparison between dates
+	if (!as_k_file.is_open() || (actual_time>(file_time+H_24))){
+		printf("sono entrato nell'if*********");
+		//validità chiave pubblica in possesso scaduta
+		//recupero nuova chiave pubblica del peer A
+		if (as_k_file.is_open())
+			as_k_file.close();	
+
+		//creazione ed invio del messaggio M4
+		
+		Nb = rand() % 1000 + 1;
+		Mess M4(B_ID, A, Nb, "");
+		M4.send_mes(kdc_socket);
+	
+		cout << "[B]: inviato M4" << endl;
+
+		//ricezione del messaggio M5 e controlli sugli id
+		Mess M5(0,0,0,"");
+		M5.receive_mes(kdc_socket);
+		check1 = M5.getSrc_id();
+		check2 = M5.getDest_id();
+
+		cout << "[B]: ricevuto M5" << endl;
+		if (check1 != B_ID || check2 != A){
+			cout << "[B]: ricevuto M5 con src_id " << check1 << " e dest_"
+					"id " << check2 << endl;
+			return -1;
+		}
+		//recupero del ciphertext e della chiave simmetrica da file (M5)
+		cipher = M5.getCipher();
+
+		kfile.open(SYM_KEY_FILE, ios::in | ios::binary);
+		if (!kfile.is_open())
+			user_err ("Sym key file not found");
+		getline(kfile, sym_key);
+		kfile.close();
+
+		//decifratura del ciphertext (M5)
+		Sym_Encryption S5;
+		S5.sym_decrypt((const unsigned char*)sym_key.data(), cipher, &check1,
+				&check2, &check3, A_asym_key);
+		S5.~Sym_Encryption();
+		if (check1 != B_ID || check2 != A || check3 != Nb){
+			cout << "[B]: ciphertext di M5 con src_id " << check1 << " dest_"
+					"id " << check2 << " nonce " << check3 << endl;
+			return -1;
+		}
+
+		//considero la chiave pubblica di A valida, scrivo il file .pem
+		as_k_file.open(A_PUB_KEY_FILE, ios::out | ios::binary);
+		if (!as_k_file.is_open()) sys_err ("Unable to create asym key file");
+		as_k_file.write(A_asym_key.data(), A_asym_key.length());
 	}
-
-	//considero la chiave pubblica di A valida, scrivo il file .pem
-	as_k_file.open(A_PUB_KEY_FILE, ios::out | ios::binary);
-	if (!as_k_file.is_open()) sys_err ("Unable to create asym key file");
-	as_k_file.write(A_asym_key.data(), A_asym_key.length());
 	as_k_file.close();
-
 	close(kdc_socket);
 
 	//Ricezione di M6 e controlli sugli ID
@@ -153,13 +189,7 @@ int main (int argc, char* argv[])
 	check1 = M6.getSrc_id();
 	check2 = M6.getDest_id();
 	as_cipher = M6.getCipher();
-<<<<<<< HEAD:bpeer/bpeer.cpp
-	//as_cipher_ll = M6.getCipher_ll();
-M6.print_hex();
-cout<<as_cipher.length()<<endl;
-=======
 
->>>>>>> 07568abe2a3c8c1890e1016358a894fc95157b7f:bpeer/bpeer.cpp
 	cout << "[B]: ricevuto M6" << endl;
 
 	if (check1 != A || check2 != B_ID){

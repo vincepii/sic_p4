@@ -142,7 +142,6 @@ bool search_shared_key(int peer, string& sh_key){
 											chiave pubblica del peer*/
 	FILE* KRep;								//Key Repository file
 
-
 	//apre il file
 	if (!(KRep = fopen("./KeyRepository", "r")))
 		sys_err("Non esiste alcun Key Repository!");

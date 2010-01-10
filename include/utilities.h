@@ -19,8 +19,15 @@
 #include <string>
 #include <openssl/evp.h>
 #include <openssl/rand.h>
+#include <sys/stat.h>
+#include <time.h>
 
 using namespace std;
+
+/** @def H_24
+ * 24 hours in seconds.
+ * */
+#define H_24 86400
 
 /** @def P_KEY_LENGTH
  * Public key length in bytes.
@@ -80,5 +87,7 @@ void printbyte (char b);
 void select_random_key (unsigned char* k, int b);
 
 void hsh(int a, int b, string hf,unsigned char** shared_key, int* hash_len);
+
+time_t last_mod_time(const char* filename);
 
 #endif

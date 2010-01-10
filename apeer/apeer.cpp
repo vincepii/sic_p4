@@ -87,53 +87,94 @@ int main (int argc, char* argv[])
 	M1.send_mes(b_sd);
 	
 	cout << "[A]: inviato M1" << endl;
+	
+	//controllo se il peer ha il file della chiave pubblica del peer che vuole contattare
+	//da più di 24 ore. In tal caso deve richiederlo, altrimenti la chiave è ancora valida
+	//e può usare quella che ha.
 
-	//Creazione e invio M2
+	time_t file_time=0;									//last modified date of the file 
+														//(in seconds from 1970)
+														
+	//get last modified date only if the file exists
+	as_k_file.open(B_PUB_KEY_FILE, ios::in | ios::binary);
+	if (as_k_file.is_open()){
+		printf("leggo attrib\n");
+		//file_time = last_mod_time(B_PUB_KEY_FILE);			//get last modified date
+		//file attribute structure
+		struct stat file_attrib;
+	
+		//get the attributes
+		stat(B_PUB_KEY_FILE, &file_attrib);
+		file_time=file_attrib.st_mtime;
+	}
+
+	//get local time
+	time_t actual_time;									//actual time in seconds from 1970
+	time(&actual_time);									//get actual time
+	
+	printf("lst mod time: %s\n", ctime(&file_time));
+	printf("actual time: %s\n", ctime(&actual_time));
+	
 	srand( time (NULL) );
-	Na = rand() % 1000 + 1;
-	Mess M2(A_ID, B_ID, Na, "");
-	M2.send_mes(kdc_sd);
+
+	//comparison between dates
+	if (!as_k_file.is_open() || (actual_time>(file_time+H_24))){
+		printf("sono entrato nell'if*********");
+		//validità chiave pubblica in possesso scaduta
+		//recupero nuova chiave pubblica del peer B
+		if (as_k_file.is_open())
+			as_k_file.close();	
+		
+		//Creazione e invio M2
+		Na = rand() % 1000 + 1;
+		Mess M2(A_ID, B_ID, Na, "");
+		M2.send_mes(kdc_sd);
 	
-	cout << "[A]: inviato M2" << endl;
+		cout << "[A]: inviato M2" << endl;
 
-	//Ricezione M3
-	Mess M3(0,0,0,"");
-	M3.receive_mes(kdc_sd);
-	check1 = M3.getSrc_id();
-	check2 = M3.getDest_id();
+		//Ricezione M3
+		Mess M3(0,0,0,"");
+		M3.receive_mes(kdc_sd);
+		check1 = M3.getSrc_id();
+		check2 = M3.getDest_id();
 
-	cout << "[A]: ricevuto M3" << endl;
-	if (check1 != A_ID || check2 != B_ID){
-		cout << "[A]: ricevuto M3 con src_id " << check1 << " e dst_id ";
-		cout << check2 << endl;
-		return -1;
-	}
-	cipher = M3.getCipher();
-	kfile.open(SYM_KEY_FILE, ios::in | ios::binary);
-	if (!kfile.is_open())
-		user_err ("Sym key file not found");
-	getline(kfile, sym_key);
-	kfile.close();
+		cout << "[A]: ricevuto M3" << endl;
+		if (check1 != A_ID || check2 != B_ID){
+			cout << "[A]: ricevuto M3 con src_id " << check1 << " e dst_id ";
+			cout << check2 << endl;
+			return -1;
+		}
+		
+		cipher = M3.getCipher();
+		kfile.open(SYM_KEY_FILE, ios::in | ios::binary);
+		if (!kfile.is_open())
+			user_err ("Sym key file not found");
+		getline(kfile, sym_key);
+		kfile.close();
 
-	Sym_Encryption S3;
+		Sym_Encryption S3;
 	
-	S3.sym_decrypt((const unsigned char *)sym_key.data(), cipher, &check1,
-			&check2, &check3, B_asym_key);
+		S3.sym_decrypt((const unsigned char *)sym_key.data(), cipher, &check1,
+				&check2, &check3, B_asym_key);
 
-	S3.~Sym_Encryption();
+		S3.~Sym_Encryption();
 
-	if (check1 != A_ID || check2 != B_ID || check3 != Na){
-		cout << "[A]: ciphertext di M3 con src_id " << check1 << " dest_"
-				"id " << check2 << " nonce " << check3 << endl;
-		return -1;
+		if (check1 != A_ID || check2 != B_ID || check3 != Na){
+			cout << "[A]: ciphertext di M3 con src_id " << check1 << " dest_"
+					"id " << check2 << " nonce " << check3 << endl;
+			return -1;
+		}
+
+		as_k_file.open(B_PUB_KEY_FILE, ios::out | ios::binary);
+		if (!as_k_file.is_open()) sys_err ("Unable to create asym key file");
+		as_k_file.write(B_asym_key.data(), B_asym_key.length());
 	}
-
-	as_k_file.open(B_PUB_KEY_FILE, ios::out | ios::binary);
-	if (!as_k_file.is_open()) sys_err ("Unable to create asym key file");
-	as_k_file.write(B_asym_key.data(), B_asym_key.length());
 	as_k_file.close();
-
 	close(kdc_sd);
+	
+	
+//------------ fine controllo validità chiave pubblica del peer da contattare	
+	
 
 	//creazione ed invio M6
 	as_a_nonce = rand() % 1000 + 1;

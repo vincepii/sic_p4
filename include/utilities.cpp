@@ -112,3 +112,14 @@ void hsh(int a, int b, string hf, unsigned char** sk, int* len){
 //	printf("\n");
 	return;
 }
+
+time_t last_mod_time(const char* filename){
+	//file attribute structure
+	struct stat file_attrib;
+	
+	//get the attributes
+	stat(filename, &file_attrib);
+	
+	//get the last modified time and return it
+	return file_attrib.st_mtime;
+}
