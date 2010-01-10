@@ -35,14 +35,7 @@ int main (int argc, char* argv[])
 	if (kdc_ip == "127.0.0.1") kdc_ip = "localhost";
 	if (b_ip == "127.0.0.1") b_ip = "localhost";
 
-	kdc_sd = socket(AF_INET, SOCK_STREAM, 0);
-	bzero(&kdc_addr, sizeof(struct sockaddr_in));
-	kdc_addr.sin_family = AF_INET;
-	kdc_addr.sin_port = htons(kdc_port);
-	inet_pton(AF_INET, kdc_ip.data(), &kdc_addr.sin_addr.s_addr);
-
-	if (connect(kdc_sd, CAST_ADDR(&kdc_addr), sizeof(struct sockaddr_in)) < 0)
-		sys_err("CL: connection error");
+	//tolto qui
 
 	b_sd = socket(AF_INET, SOCK_STREAM, 0);
 	bzero(&b_addr, sizeof(struct sockaddr_in));
@@ -98,28 +91,35 @@ int main (int argc, char* argv[])
 	//get last modified date only if the file exists
 	as_k_file.open(B_PUB_KEY_FILE, ios::in | ios::binary);
 	if (as_k_file.is_open()){
-		printf("leggo attrib\n");
-		//file_time = last_mod_time(B_PUB_KEY_FILE);			//get last modified date
-		//file attribute structure
-		struct stat file_attrib;
-	
-		//get the attributes
-		stat(B_PUB_KEY_FILE, &file_attrib);
-		file_time=file_attrib.st_mtime;
+		file_time = last_mod_time(B_PUB_KEY_FILE);			//get last modified date
 	}
 
 	//get local time
 	time_t actual_time;									//actual time in seconds from 1970
 	time(&actual_time);									//get actual time
 	
-	printf("lst mod time: %s\n", ctime(&file_time));
-	printf("actual time: %s\n", ctime(&actual_time));
+	//se file_time==0 perchè non ho il file non stampare la data (non significativa)
+	if (file_time==0)
+		printf("***NON POSSEGGO CHIAVE PUBBLICA DI B***\n");
+	else
+		printf("DATA RILASCIO CHIAVE PUBBLICA DI B: %s\n", ctime(&file_time));
+	printf("ORA/DATA ATTUALE: %s\n", ctime(&actual_time));
 	
 	srand( time (NULL) );
 
 	//comparison between dates
 	if (!as_k_file.is_open() || (actual_time>(file_time+H_24))){
-		printf("sono entrato nell'if*********");
+		printf("***RECUPERO CHIAVE PUBBLICA DI B***\n");
+	
+		kdc_sd = socket(AF_INET, SOCK_STREAM, 0);
+		bzero(&kdc_addr, sizeof(struct sockaddr_in));
+		kdc_addr.sin_family = AF_INET;
+		kdc_addr.sin_port = htons(kdc_port);
+		inet_pton(AF_INET, kdc_ip.data(), &kdc_addr.sin_addr.s_addr);
+
+		if (connect(kdc_sd, CAST_ADDR(&kdc_addr), sizeof(struct sockaddr_in)) < 0)
+			sys_err("CL: connection error");
+	
 		//validità chiave pubblica in possesso scaduta
 		//recupero nuova chiave pubblica del peer B
 		if (as_k_file.is_open())
@@ -168,6 +168,8 @@ int main (int argc, char* argv[])
 		as_k_file.open(B_PUB_KEY_FILE, ios::out | ios::binary);
 		if (!as_k_file.is_open()) sys_err ("Unable to create asym key file");
 		as_k_file.write(B_asym_key.data(), B_asym_key.length());
+
+		printf("*** FINE RECUPERO CHIAVE PUBBLICA DI B ***\n");
 	}
 	as_k_file.close();
 	close(kdc_sd);
