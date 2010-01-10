@@ -131,7 +131,7 @@ int main (int argc, char* argv[])
 	Sym_Encryption S5;
 	S5.sym_decrypt((const unsigned char*)sym_key.data(), cipher, &check1,
 			&check2, &check3, A_asym_key);
-
+	S5.~Sym_Encryption();
 	if (check1 != B_ID || check2 != A || check3 != Nb){
 		cout << "[B]: ciphertext di M5 con src_id " << check1 << " dest_"
 				"id " << check2 << " nonce " << check3 << endl;
@@ -233,6 +233,7 @@ int main (int argc, char* argv[])
 	Sym_Encryption test_mess;
 	string plain = test_mess.generic_decrypt(shared_key,
 			(unsigned char *) M9.getCipher().data(), msg_len);
+	test_mess.~Sym_Encryption();
 	cout << "Messaggio ricevuto:" << endl << plain << endl;
 
 	close(curr_sd);

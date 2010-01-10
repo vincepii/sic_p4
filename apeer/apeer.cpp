@@ -202,7 +202,7 @@ int main (int argc, char* argv[])
 	Sym_Encryption test_mess;
 	ciphertxt = test_mess.generic_encrypt(shared_key,
 			(unsigned char *)plain, strlen(plain) + 1);
-
+	test_mess.~Sym_Encryption();
 	Mess M9(A_ID, B_ID, 0, ciphertxt);
 	M9.send_mes(b_sd);
 
