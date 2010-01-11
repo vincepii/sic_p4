@@ -178,11 +178,6 @@ int As_enc::asym_decr(string ctxt)
 void As_enc::extract_integers(int* a, int* b, int* c)
 {
 	unsigned char* p = (unsigned char *)this->plain.data();
-	cout<<"pl:"<<this->plain.length()<<endl;
-	cout<<"p="<<endl;
-	for(int i=0; i<this->plain.length(); i++)
-		printbyte(p[i]);
-	cout<<endl;
 	memcpy(a, &p[0], sizeof(int));
 	memcpy(b, &p[1 * sizeof(int)], sizeof(int));
 	memcpy(c, &p[2 * sizeof(int)], sizeof(int));
