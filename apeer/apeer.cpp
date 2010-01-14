@@ -94,7 +94,7 @@ int main (int argc, char* argv[])
 		printf("DATA RILASCIO CHIAVE PUBBLICA DI B: %s\n", ctime(&file_time));
 	printf("ORA/DATA ATTUALE: %s\n", ctime(&actual_time));
 	
-	srand( time (NULL) );
+	//srand( time (NULL) );
 
 	//comparison between dates
 	if (!as_k_file.is_open() || (actual_time>(file_time+H_24))){
@@ -115,7 +115,8 @@ int main (int argc, char* argv[])
 			as_k_file.close();	
 		
 		//Creazione e invio M2
-		Na = rand() % 1000 + 1;
+		//Na = rand() % 1000 + 1;
+		RAND_bytes((unsigned char *)&Na, sizeof(int));
 		Mess M2(A_ID, B_ID, Na, "");
 		M2.send_mes(kdc_sd);
 	
@@ -168,7 +169,8 @@ int main (int argc, char* argv[])
 	
 
 	//creazione ed invio M6
-	as_a_nonce = rand() % 1000 + 1;
+	//as_a_nonce = rand() % 1000 + 1;
+	RAND_bytes((unsigned char *)&as_a_nonce, sizeof(int));
 	As_enc ae_M6(B_PUB_KEY_FILE, "");
 
 	ae_M6.asym_encr(A_ID, B_ID, as_a_nonce);

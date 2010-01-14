@@ -103,7 +103,7 @@ int main (int argc, char* argv[])
 		printf("DATA RILASCIO CHIAVE PUBBLICA DI a: %s\n", ctime(&file_time));
 	printf("ORA/DATA ATTUALE: %s\n", ctime(&actual_time));
 
-	srand( time (NULL)  + 10);
+	//srand( time (NULL)  + 10);
 
 	if (!as_k_file.is_open() || (actual_time>(file_time+H_24))){
 		printf("***RECUPERO CHIAVE PUBBLICA DI A***\n");
@@ -122,7 +122,8 @@ int main (int argc, char* argv[])
 
 		//creazione ed invio del messaggio M4
 		
-		Nb = rand() % 1000 + 1;
+		//Nb = rand() % 1000 + 1;
+		RAND_bytes((unsigned char *)&Nb, sizeof(int));
 		Mess M4(B_ID, A, Nb, "");
 		M4.send_mes(kdc_socket);
 	
@@ -200,7 +201,8 @@ int main (int argc, char* argv[])
 	}
 
 	//Creazione del crittogramma da inviare in M7
-	as_b_nonce = rand() % 1000 + 1;
+	//as_b_nonce = rand() % 1000 + 1;
+	RAND_bytes((unsigned char *)&as_b_nonce, sizeof(int));
 	As_enc ae_M7(A_PUB_KEY_FILE, "");
 	ae_M7.asym_encr(B_ID, A, as_a_nonce, as_b_nonce);
 
