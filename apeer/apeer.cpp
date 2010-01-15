@@ -16,7 +16,6 @@ using namespace std;
 int main (int argc, char* argv[])
 {
 	//-------------------------------------------------------------------------
-	//Creazione socket per comunicazione con KDC e B (sempre da client)
 
 	struct sockaddr_in kdc_addr, b_addr;
 	int kdc_port;
@@ -34,8 +33,6 @@ int main (int argc, char* argv[])
 	b_port = atoi(argv[4]);
 	if (kdc_ip == "127.0.0.1") kdc_ip = "localhost";
 	if (b_ip == "127.0.0.1") b_ip = "localhost";
-
-	//tolto qui
 
 	b_sd = socket(AF_INET, SOCK_STREAM, 0);
 	bzero(&b_addr, sizeof(struct sockaddr_in));
@@ -69,7 +66,6 @@ int main (int argc, char* argv[])
 	ofstream as_k_file;
 	int as_a_nonce;
 	int as_b_nonce;
-	//int as_cipher_ll;
 	string as_cipher;
 	unsigned char* shared_key = NULL;
 	
@@ -80,23 +76,16 @@ int main (int argc, char* argv[])
 	M1.send_mes(b_sd);
 	
 	cout << "[A]: inviato M1" << endl;
-	
-	//controllo se il peer ha il file della chiave pubblica del peer che vuole contattare
-	//da più di 24 ore. In tal caso deve richiederlo, altrimenti la chiave è ancora valida
-	//e può usare quella che ha.
 
-	time_t file_time=0;									//last modified date of the file 
-														//(in seconds from 1970)
+	time_t file_time = 0;
 														
-	//get last modified date only if the file exists
 	as_k_file.open(B_PUB_KEY_FILE, ios::in | ios::binary);
 	if (as_k_file.is_open()){
-		file_time = last_mod_time(B_PUB_KEY_FILE);			//get last modified date
+		file_time = last_mod_time(B_PUB_KEY_FILE);
 	}
 
-	//get local time
-	time_t actual_time;									//actual time in seconds from 1970
-	time(&actual_time);									//get actual time
+	time_t actual_time;
+	time(&actual_time);
 	
 	//se file_time==0 perchè non ho il file non stampare la data (non significativa)
 	if (file_time==0)
@@ -105,7 +94,7 @@ int main (int argc, char* argv[])
 		printf("DATA RILASCIO CHIAVE PUBBLICA DI B: %s\n", ctime(&file_time));
 	printf("ORA/DATA ATTUALE: %s\n", ctime(&actual_time));
 	
-	srand( time (NULL) );
+	//srand( time (NULL) );
 
 	//comparison between dates
 	if (!as_k_file.is_open() || (actual_time>(file_time+H_24))){
@@ -126,7 +115,8 @@ int main (int argc, char* argv[])
 			as_k_file.close();	
 		
 		//Creazione e invio M2
-		Na = rand() % 1000 + 1;
+		//Na = rand() % 1000 + 1;
+		RAND_bytes((unsigned char *)&Na, sizeof(int));
 		Mess M2(A_ID, B_ID, Na, "");
 		M2.send_mes(kdc_sd);
 	
@@ -179,15 +169,15 @@ int main (int argc, char* argv[])
 	
 
 	//creazione ed invio M6
-	as_a_nonce = rand() % 1000 + 1;
+	//as_a_nonce = rand() % 1000 + 1;
+	RAND_bytes((unsigned char *)&as_a_nonce, sizeof(int));
 	As_enc ae_M6(B_PUB_KEY_FILE, "");
 
 	ae_M6.asym_encr(A_ID, B_ID, as_a_nonce);
 
 	Mess M6(A_ID, B_ID, 0, ae_M6.getCipher());
 	M6.send_mes(b_sd);
-M6.print_hex();
-cout<<ae_M6.getCipher().length()<<endl;
+
 	cout << "[A]: inviato M6" << endl;
 
 	//ricezione M7

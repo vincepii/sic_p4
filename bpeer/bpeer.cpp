@@ -14,7 +14,7 @@ using namespace std;
 int main (int argc, char* argv[])
 {
 	//-------------------------------------------------------------------------
-	//PREPARAZIONE SOCKET PER COLLEGAMENTO CON KDC
+
 
 	struct sockaddr_in addr;
 	int server_port;
@@ -27,10 +27,7 @@ int main (int argc, char* argv[])
 	server_port = atoi(argv[2]);
 	if (server_ip == "127.0.0.1") server_ip = "localhost";
 
-	//tolto qui
-
 	//-------------------------------------------------------------------------
-	//PREPARAZIONE SOCKET PER COLLEGAMENTO CON A
 
 	int port;
 
@@ -89,34 +86,25 @@ int main (int argc, char* argv[])
 		cout << "[B]: ricevuto M1 con dest_id " << B << endl;
 		return -1;
 	}
-	
-	//controllo se il peer ha il file della chiave pubblica del peer che lo contatta
-	//da più di 24 ore. In tal caso deve richiederlo, altrimenti la chiave è ancora valida
-	//e può usare quella che ha.
 
-	time_t file_time=0;									//last modified date of the file 
-														//(in seconds from 1970)
-														
-	//get last modified date only if the file exists
+	time_t file_time=0;
+	
 	as_k_file.open(A_PUB_KEY_FILE, ios::in | ios::binary);
 	if (as_k_file.is_open()){
-		file_time = last_mod_time(A_PUB_KEY_FILE);			//get last modified date
+		file_time = last_mod_time(A_PUB_KEY_FILE);
 	}
 
-	//get local time
-	time_t actual_time;									//actual time in seconds from 1970
-	time(&actual_time);									//get actual time
+	time_t actual_time;
+	time(&actual_time);
 	
-	//se file_time==0 perchè non ho il file non stampare la data (non significativa)
 	if (file_time==0)
 		printf("***NON POSSEGGO CHIAVE PUBBLICA DI A***\n");
 	else
 		printf("DATA RILASCIO CHIAVE PUBBLICA DI a: %s\n", ctime(&file_time));
 	printf("ORA/DATA ATTUALE: %s\n", ctime(&actual_time));
 
-	srand( time (NULL)  + 10);
+	//srand( time (NULL)  + 10);
 
-	//comparison between dates
 	if (!as_k_file.is_open() || (actual_time>(file_time+H_24))){
 		printf("***RECUPERO CHIAVE PUBBLICA DI A***\n");
 	
@@ -128,15 +116,14 @@ int main (int argc, char* argv[])
 
 		if (connect(kdc_socket, CAST_ADDR(&addr), sizeof(struct sockaddr_in)) < 0)
 			sys_err("B: connection error");
-			
-		//validità chiave pubblica in possesso scaduta
-		//recupero nuova chiave pubblica del peer A
+
 		if (as_k_file.is_open())
 			as_k_file.close();	
 
 		//creazione ed invio del messaggio M4
 		
-		Nb = rand() % 1000 + 1;
+		//Nb = rand() % 1000 + 1;
+		RAND_bytes((unsigned char *)&Nb, sizeof(int));
 		Mess M4(B_ID, A, Nb, "");
 		M4.send_mes(kdc_socket);
 	
@@ -154,6 +141,7 @@ int main (int argc, char* argv[])
 					"id " << check2 << endl;
 			return -1;
 		}
+
 		//recupero del ciphertext e della chiave simmetrica da file (M5)
 		cipher = M5.getCipher();
 
@@ -213,7 +201,8 @@ int main (int argc, char* argv[])
 	}
 
 	//Creazione del crittogramma da inviare in M7
-	as_b_nonce = rand() % 1000 + 1;
+	//as_b_nonce = rand() % 1000 + 1;
+	RAND_bytes((unsigned char *)&as_b_nonce, sizeof(int));
 	As_enc ae_M7(A_PUB_KEY_FILE, "");
 	ae_M7.asym_encr(B_ID, A, as_a_nonce, as_b_nonce);
 
@@ -252,8 +241,6 @@ int main (int argc, char* argv[])
 	}
 
 	cout << "Ya: " << as_a_nonce << " Yb: " << as_b_nonce << endl;
-
-
 
 	//calcolo della chiave come hash dei nonce Ya e Yb
 
