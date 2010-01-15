@@ -203,9 +203,9 @@ int main (int argc, char* argv[])
 	//Decifratura del crittogramma contenuto in M6 e controllo sugli ID
 	As_enc ae_M6("", PRIV_KEY_FILE);
 	ae_M6.asym_decr(as_cipher);
-cout<<"hohoh"<<endl;
+
 	ae_M6.extract_integers(&check1, &check2, &as_a_nonce);
-cout<<"Ya= " <<as_a_nonce<<endl;
+
 	if (check1 != A || check2 != B_ID){
 		cout << "[B]: ciphertext di M6 con src_id " << check1 << " dest_"
 				"id " << check2 << endl;

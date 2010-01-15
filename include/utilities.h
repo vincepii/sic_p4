@@ -86,7 +86,21 @@ void printbyte (char b);
 
 void select_random_key (unsigned char* k, int b);
 
+
+/**
+ * @fn void hsh(int a, int b, string hf,unsigned char** shared_key, int* hash_len)
+ * Performs hash function.
+ *
+ * Join the peer's secrets to build the session key.
+ * @param[in] a peer A secret
+ * @param[in] b peer B secret
+ * @param[in] hf hash function type
+ * @param[out] *shared_key session key created
+ * @param[out] *hash_len hash function output length
+ *
+ */
 void hsh(int a, int b, string hf,unsigned char** shared_key, int* hash_len);
+
 
 time_t last_mod_time(const char* filename);
 

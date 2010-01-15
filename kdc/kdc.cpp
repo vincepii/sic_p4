@@ -18,7 +18,7 @@ bool search_shared_key(int peer, string& sh_key);
 bool search_public_key(int peer, string& pub_key);
 
 void* body(void* arg){
-	int sd = (int) arg;
+	int sd = (int) arg;		//socket
 	int src;
 	int dst;
 	int nonce;
@@ -74,6 +74,8 @@ int main(int argc, char* argv[]){
 	if (argc<2) user_err("KDC: usage: kdc <port>");
 	port = atoi(argv[1]);
 
+	//base_sd è il socket usato dal kdc per attendere richieste; 
+	//curr_sd è quello usato da un thread gestore per servire la richiesta
 	int base_sd, curr_sd;
 	struct sockaddr_in c_add;
 	unsigned int addrlen;

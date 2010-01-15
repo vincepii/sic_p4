@@ -20,19 +20,37 @@
 
 using namespace std;
 
+
+/* As_enc:
+   Classe che realizza la struttura di un oggetto per gestire la cifratura asimmetrica.
+*/
 class As_enc {
 private:
+	//file chiave pubblica
 	string pubkey_file;
+	
+	//file chiave privata
 	string privkey_file;
+	
 	//cifrario creato da public_encrypt
 	string cipher;
+	
 	//plaintext ottenuto da private_decrypt
 	string plain;
 public:
+
+	//costruttore per definire quali file contengono le chiavi (pub/priv) per la 
+	//cifratura asimmetrica usare
 	As_enc(string pubfile, string privfile);
+	
+	//funzioni di cifratura (overloading per supportare i diversi tipi di input)
 	int asym_encr(int src_id, int dst_id, int nonce1);
 	int asym_encr(int src_id, int dst_id, int nonce1, int nonce2);
+	
+	//funzione di decifratura (prende in input il ciphertext)
 	int asym_decr(string from);
+	
+	//funzioni per stampa/estrazione dei contenuti
 	void print_plain(int number_of_int_carried);
 	string getCipher();
 	string getPlain();
