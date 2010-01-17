@@ -22,6 +22,8 @@ class Mess {
 		int dest_id;
 		/** Nonce */
 		int nonce;
+		/** Initialization vector */
+		string iv;
 		/** Corpo del messaggio (tipicamente sarà un crittogramma) */
 		string msg;
 	public:
@@ -32,9 +34,10 @@ class Mess {
 		 * @param[in] src_id ID del mittente
 		 * @param[in] dest_id ID del destinatario
 		 * @param[in] nonce Nonce
+		 * @param[in] iv Initialization vector
 		 * @param[in] cipher Crittogramma
 		 */
-		Mess(int src_id, int dest_id, int nonce, string cipher);
+		Mess(int src_id, int dest_id, int nonce, string iv, string cipher);
 		
 		/**
 		 * Invia un oggetto messaggio sul socket
@@ -66,6 +69,13 @@ class Mess {
 		 * @return msg
 		 */
 		string getCipher();
+
+		/**
+		 * Getter per iv
+		 *
+		 * @return iv
+		 */
+		string getIv();
 
 		/**
 		 * Getter per dest_id

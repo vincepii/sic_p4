@@ -62,6 +62,7 @@ int main (int argc, char* argv[])
 	int check2 = 0;
 	int check3 = 0;
 	int check4 = 0;
+	string ivstr;
 	string cipher;
 	string sym_key;
 	string A_asym_key;
@@ -75,7 +76,7 @@ int main (int argc, char* argv[])
 	cout << "[B]: Running..." << endl;
 
 	//ricezione di M1 e controllo sul mio id
-	Mess M1(0,0,0,"");
+	Mess M1(0,0,0,"","");
 	M1.receive_mes(curr_sd);
 	A = M1.getSrc_id();
 	B = M1.getDest_id();
@@ -124,16 +125,17 @@ int main (int argc, char* argv[])
 		
 		//Nb = rand() % 1000 + 1;
 		RAND_bytes((unsigned char *)&Nb, sizeof(int));
-		Mess M4(B_ID, A, Nb, "");
+		Mess M4(B_ID, A, Nb, "", "");
 		M4.send_mes(kdc_socket);
 	
 		cout << "[B]: inviato M4" << endl;
 
 		//ricezione del messaggio M5 e controlli sugli id
-		Mess M5(0,0,0,"");
+		Mess M5(0,0,0,"","");
 		M5.receive_mes(kdc_socket);
 		check1 = M5.getSrc_id();
 		check2 = M5.getDest_id();
+		ivstr = M5.getIv();
 
 		cout << "[B]: ricevuto M5" << endl;
 		if (check1 != B_ID || check2 != A){
@@ -154,7 +156,7 @@ int main (int argc, char* argv[])
 		//decifratura del ciphertext (M5)
 		Sym_Encryption S5;
 		S5.sym_decrypt((const unsigned char*)sym_key.data(), cipher, &check1,
-				&check2, &check3, A_asym_key);
+				&check2, &check3, A_asym_key, ivstr);
 		S5.~Sym_Encryption();
 		if (check1 != B_ID || check2 != A || check3 != Nb){
 			cout << "[B]: ciphertext di M5 con src_id " << check1 << " dest_"
@@ -173,7 +175,7 @@ int main (int argc, char* argv[])
 	close(kdc_socket);
 
 	//Ricezione di M6 e controlli sugli ID
-	Mess M6(0,0,0,"");
+	Mess M6(0,0,0,"","");
 	M6.receive_mes(curr_sd);
 
 	check1 = M6.getSrc_id();
@@ -207,13 +209,13 @@ int main (int argc, char* argv[])
 	ae_M7.asym_encr(B_ID, A, as_a_nonce, as_b_nonce);
 
 	//Creazione ed invio del messaggio M7
-	Mess M7(B_ID, A, 0, ae_M7.getCipher());
+	Mess M7(B_ID, A, 0, "",ae_M7.getCipher());
 	M7.send_mes(curr_sd);
 
 	cout << "[B]: inviato M7" << endl;
 
 	//Ricezione di M8 e controlli
-	Mess M8(0,0,0,"");
+	Mess M8(0,0,0,"","");
 	M8.receive_mes(curr_sd);
 	check1 = M8.getSrc_id();
 	check2 = M8.getDest_id();
@@ -254,12 +256,13 @@ int main (int argc, char* argv[])
 	cout << "Protocollo completato, chiave di sessione stabilita" << endl;
 
 	//ricezione messaggio cifrato con la chiave di sessione
-	Mess M9(0,0,0,"");
+	Mess M9(0,0,0,"","");
 	M9.receive_mes(curr_sd);
 	int msg_len = M9.getCipher().size();
+	ivstr = M9.getIv();
 	Sym_Encryption test_mess;
 	string plain = test_mess.generic_decrypt(shared_key,
-			(unsigned char *) M9.getCipher().data(), msg_len);
+			(unsigned char *) M9.getCipher().data(), msg_len, ivstr);
 	test_mess.~Sym_Encryption();
 	cout << "Messaggio ricevuto:" << endl << plain << endl;
 

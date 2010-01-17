@@ -25,11 +25,13 @@ void* body(void* arg){
 	string shared_key;
 	string public_key;
 	string cipher;
+	string ivstr;
+	unsigned char iv[EVP_MAX_IV_LENGTH];
 
 	cout << "[KDC]: Thread started..." << endl;
 
 	//ricezione messaggio del tipo A, B, Na
-	Mess M2_M4(0,0,0,"");
+	Mess M2_M4(0,0,0,"","");
 	M2_M4.receive_mes(sd);
 
 	cout << "[KDC]: ricevuto M2/M4" << endl;
@@ -38,22 +40,24 @@ void* body(void* arg){
 	dst = M2_M4.getDest_id();
 	nonce = M2_M4.getNonce();
 
-	//ricava la chiave condivisa con A
+	//cerca la chiave condivisa con A
 	if(!search_shared_key(src, shared_key))
 		sys_err("Errore ricerca chiave condivisa tra peer e KDC!");
 
-	//ricava la chiave pubblica di B
+	//cerca la chiave pubblica di B
 	if(!search_public_key(dst, public_key))
 		sys_err("Errore ricerca chiave pubblica di un peer!");
 
 	//crea crittogramma contenente A, B, Na, eB usando la shared_key
+	RAND_bytes(iv, EVP_MAX_IV_LENGTH);
+	ivstr.assign((const char *)iv, EVP_MAX_IV_LENGTH);
 	Sym_Encryption encr_obj;
 	cipher=encr_obj.sym_encrypt((unsigned char*)shared_key.data(), src, dst,
-			nonce, (unsigned char*)public_key.data());
+			nonce, (unsigned char*)public_key.data(), ivstr);
 	encr_obj.~Sym_Encryption();
 
 	//invia un messaggio contenente A, B, {A, B, Na, eB}Kat
-	Mess M3_M5(src, dst, 0, cipher);
+	Mess M3_M5(src, dst, 0, ivstr, cipher);
 	M3_M5.send_mes(sd);
 
 	cout << "[KDC]: inviato M3/M5" << endl;

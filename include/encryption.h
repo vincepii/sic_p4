@@ -33,11 +33,12 @@ class Sym_Encryption{
 		 * @param[in] B ID dell'entità B
 		 * @param[in] n nonce
 		 * @param[in] *pub Chiave asimmetrica da fornire
+		 * @param[in] iv Initialization Vector per cbc
 		 * @return Crittogramma prodotto dall'operazione di cifratura
 		 * @see generic_encrypt()
 		 */
 		string sym_encrypt(const unsigned char* k, int A, int B,
-				int n, const unsigned char* pub);
+				int n, const unsigned char* pub, string iv);
 		
 		/**
 		 * Decifra un crittogramma ed estrae il contenuto sui parametri di output
@@ -48,10 +49,11 @@ class Sym_Encryption{
 		 * @param[out] *ID2 Conterrà l'id dell'utente 2 decifrato
 		 * @param[out] *nonce Conterrà il nonce decifrato
 		 * @param[out] &pub Conterrà la chiave pubblica decifrata
+		 * @param[in] iv Initialization Vector per cbc
 		 * @see generic_decrypt()
 		 */
 		void sym_decrypt(const unsigned char* k, const string cptxt, int* ID1,
-				int* ID2, int* nonce, string& pub);
+				int* ID2, int* nonce, string& pub, string iv);
 
 		/**
 		 * Realizza la funzione di cifratura di base
@@ -59,9 +61,11 @@ class Sym_Encryption{
 		 * @param[in] *k Chiave simmetrica
 		 * @param[in] *msg Messaggio da cifrare
 		 * @param[in] msg_ll Lunghezza del plaintext
+		 * @param[in] iv Initialization Vector per cbc
 		 * @return Ciphertext ottenuto con la cifratura
 		 */
-		string generic_encrypt(unsigned char* k, unsigned char* msg, int msg_ll);
+		string generic_encrypt(unsigned char* k, unsigned char* msg,
+				int msg_ll, string iv);
 
 		/**
 		 * Realizza la funzione di decifratura di base
@@ -69,9 +73,11 @@ class Sym_Encryption{
 		 * @param[in] *k Chiave simmetrica
 		 * @param[in] *cipher Crittogramma da decifrare
 		 * @param[in] msg_ll Lunghezza del plaintext
+		 * @param[in] iv Initialization Vector per cbc
 		 * @return Plaintext ottunuto con la decifratura
 		 */
-		string generic_decrypt(unsigned char* k, unsigned char* cipher, int msg_ll);
+		string generic_decrypt(unsigned char* k, unsigned char* cipher,
+				int msg_ll, string iv);
 
 };
 

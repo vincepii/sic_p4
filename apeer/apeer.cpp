@@ -59,6 +59,7 @@ int main (int argc, char* argv[])
 	int check2 = 0;
 	int check3 = 0;
 	int Na;
+	string ivstr;
 	string cipher;
 	ifstream kfile;
 	string sym_key;
@@ -72,7 +73,7 @@ int main (int argc, char* argv[])
 	cout << "[A]: Running..." << endl;
 
 	//Creazione e invio M1
-	Mess M1(A_ID, B_ID, 0, "");
+	Mess M1(A_ID, B_ID, 0, "","");
 	M1.send_mes(b_sd);
 	
 	cout << "[A]: inviato M1" << endl;
@@ -117,16 +118,17 @@ int main (int argc, char* argv[])
 		//Creazione e invio M2
 		//Na = rand() % 1000 + 1;
 		RAND_bytes((unsigned char *)&Na, sizeof(int));
-		Mess M2(A_ID, B_ID, Na, "");
+		Mess M2(A_ID, B_ID, Na, "", "");
 		M2.send_mes(kdc_sd);
 	
 		cout << "[A]: inviato M2" << endl;
 
 		//Ricezione M3
-		Mess M3(0,0,0,"");
+		Mess M3(0,0,0,"","");
 		M3.receive_mes(kdc_sd);
 		check1 = M3.getSrc_id();
 		check2 = M3.getDest_id();
+		ivstr = M3.getIv();
 
 		cout << "[A]: ricevuto M3" << endl;
 		if (check1 != A_ID || check2 != B_ID){
@@ -145,7 +147,7 @@ int main (int argc, char* argv[])
 		Sym_Encryption S3;
 	
 		S3.sym_decrypt((const unsigned char *)sym_key.data(), cipher, &check1,
-				&check2, &check3, B_asym_key);
+				&check2, &check3, B_asym_key, ivstr);
 
 		S3.~Sym_Encryption();
 
@@ -175,13 +177,13 @@ int main (int argc, char* argv[])
 
 	ae_M6.asym_encr(A_ID, B_ID, as_a_nonce);
 
-	Mess M6(A_ID, B_ID, 0, ae_M6.getCipher());
+	Mess M6(A_ID, B_ID, 0, "", ae_M6.getCipher());
 	M6.send_mes(b_sd);
 
 	cout << "[A]: inviato M6" << endl;
 
 	//ricezione M7
-	Mess M7(0,0,0,"");
+	Mess M7(0,0,0,"","");
 	M7.receive_mes(b_sd);
 	check1 = M7.getSrc_id();
 	check2 = M7.getDest_id();
@@ -209,7 +211,7 @@ int main (int argc, char* argv[])
 	As_enc ae_M8(B_PUB_KEY_FILE, "");
 	ae_M8.asym_encr(A_ID, B_ID, as_b_nonce, as_a_nonce);
 
-	Mess M8(A_ID, B_ID, 0, ae_M8.getCipher());
+	Mess M8(A_ID, B_ID, 0, "",ae_M8.getCipher());
 	M8.send_mes(b_sd);
 	
 	cout << "[A]: inviato M8" << endl;
@@ -217,8 +219,6 @@ int main (int argc, char* argv[])
 	//creazione della chiave di sessione usando as_a_nonce e as_b_nonce
 
 	cout << "Ya: " << as_a_nonce << " Yb: " << as_b_nonce << endl;
-
-
 
 	//chiave: hash sugli interi
 	int hash_len;
@@ -234,11 +234,16 @@ int main (int argc, char* argv[])
 	const char* plain = "That is not dead which can eternal lie, "
 				"And with strange aeons even death may die.";
 	Sym_Encryption test_mess;
+	unsigned char iv[EVP_MAX_IV_LENGTH];
+	RAND_bytes(iv, EVP_MAX_IV_LENGTH);
+	ivstr.assign((const char *)iv, EVP_MAX_IV_LENGTH);
 	ciphertxt = test_mess.generic_encrypt(shared_key,
-			(unsigned char *)plain, strlen(plain) + 1);
+			(unsigned char *)plain, strlen(plain) + 1, ivstr);
 	test_mess.~Sym_Encryption();
-	Mess M9(A_ID, B_ID, 0, ciphertxt);
+	Mess M9(A_ID, B_ID, 0, ivstr, ciphertxt);
 	M9.send_mes(b_sd);
+
+	cout << "Inviato messaggio di test cifrato" << endl;
 
 	close(b_sd);
 
