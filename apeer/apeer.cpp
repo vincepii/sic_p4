@@ -96,7 +96,7 @@ int main (int argc, char* argv[])
 	
 	//srand( time (NULL) );
 
-	//comparison between dates
+	//confronto fra le date
 	if (!as_k_file.is_open() || (actual_time>(file_time+H_24))){
 		printf("***RECUPERO CHIAVE PUBBLICA DI B***\n");
 	

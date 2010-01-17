@@ -1,43 +1,96 @@
+/**
+ * @file comm_layer.h
+ * Scambio messaggi su socket
+ */
+
 #include "utilities.h"
 
 #ifndef __mesgs_h__
 #define __mesgs_h__
 
-/*
-	Mess:
-	
-	Classe che realizza la struttura di un oggetto messaggio da scambiare tra peer e con il kdc.
-*/
+/**
+ * Classe che realizza la struttura di un oggetto messaggio
+ *
+ * Struttura generale di un oggetto messaggio, saranno usati solamente i
+ * campi necessari allo specifico messaggio da inviare
+ */
 class Mess {
 	private:
-		//mittente/destinatario indivisuati da id
+		/** ID del mittente */
 		int src_id;
+		/** ID del destinatario */
 		int dest_id;
-		
-		//autoesplicativi
+		/** Nonce */
 		int nonce;
+		/** Corpo del messaggio (tipicamente sarà un crittogramma) */
 		string msg;
 	public:
 	
-		//costruttore per creare un messaggio con i parametri passati
+		/**
+		 * Costruttore dell'oggetto Mess
+		 *
+		 * @param[in] src_id ID del mittente
+		 * @param[in] dest_id ID del destinatario
+		 * @param[in] nonce Nonce
+		 * @param[in] cipher Crittogramma
+		 */
 		Mess(int src_id, int dest_id, int nonce, string cipher);
 		
-		//invia un messaggio sul socket passato come argomento
+		/**
+		 * Invia un oggetto messaggio sul socket
+		 *
+		 * Serializza l'oggetto Mess ed invia sul socket ogni suo campo
+		 *
+		 * @param[in] socket Descrittore del socket
+		 */
 		void send_mes(int socket);
 
-		//riceve un messaggio dal socket passato come argomento
+		/**
+		 * Riceve un oggetto messaggio da socket
+		 *
+		 * Vengono ricevuti uno ad uno i campi dell'oggetto Mess, e viene
+		 * compilato l'oggetto su cui è chiamato il metodo
+		 *
+		 * @param[in] socket Descrittore del socket
+		 */
 		int receive_mes(int socket);
 		
-		//stampa messaggio
+		/**
+		 * Stampa i campi dell'oggetto Mess
+		 */
 		void print();
 		
-		//estrazione campi messaggio
+		/**
+		 * Getter per il ciphertext
+		 *
+		 * @return msg
+		 */
 		string getCipher();
+
+		/**
+		 * Getter per dest_id
+		 *
+		 * @return dest_id
+		 */
 		int getDest_id();
+
+		/**
+		 * Getter per nonce
+		 *
+		 * @return nonce
+		 */
 		int getNonce();
+
+		/**
+		 * Getter per src_id
+		 *
+		 * @return src_id
+		 */
 		int getSrc_id();
 		
-		//stampa in esadecimale il cifrato contenuto
+		/**
+		 * Stampa il messaggio, formattando in esadecimale il campo msg
+		 */
 		void print_hex();
 };
 

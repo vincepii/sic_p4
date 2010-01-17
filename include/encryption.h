@@ -1,50 +1,76 @@
+/**
+ * @file encryption.h
+ * Contiene le funzioni e le strutture dati per la (de)cifratura simmetrica
+ */
 #include "utilities.h"
-
-/** @file encryption.h
- * File containing encryption/decryption functions and data structures.
- *
- * */
 #ifndef __encryption_h__
 #define __encryption_h__
 
-/*
-	Sym_Encryption:
-	
-	Classe che permette di creare oggetti per gestire la cifratira simmetrica.
-*/
-
+/**
+ * Classe per la gestione della (de)cifratura simmetrica
+ */
 class Sym_Encryption{
 	private:
-		//context
+		/** Contesto */
 		EVP_CIPHER_CTX* ctx;
 
 	public:
-		//constructor
+		/**
+		 * Costruttore, inizializza il contesto
+		 */
 		Sym_Encryption();
 		
-		//destructor
+		/**
+		 * Distruttore, invoca la cleanup sul contesto
+		 */
 		~Sym_Encryption();
 		
 		/**
-		 * Funzione di cifratura che inizializza i parametri da usare
-		 * quando la struttura del messaggio da cifrare usa i campi definiti come argomenti.
+		 * Crea un crittogramma cifrando i paramatri passati in argomento
 		 *
-		 * chiave simmetrica, ids e nonce, chiave asimm
+		 * @param[in] *k Chiave simmetrica per cifrare
+		 * @param[in] A ID dell'entità A
+		 * @param[in] B ID dell'entità B
+		 * @param[in] n nonce
+		 * @param[in] *pub Chiave asimmetrica da fornire
+		 * @return Crittogramma prodotto dall'operazione di cifratura
+		 * @see generic_encrypt()
 		 */
 		string sym_encrypt(const unsigned char* k, int A, int B,
 				int n, const unsigned char* pub);
 		
 		/**
-		 * Funzione di decifratura che preleva i dati nel messaggio
-		 * quando la struttura di quest'ultimo usa i campi definiti come argomenti.
+		 * Decifra un crittogramma ed estrae il contenuto sui parametri di output
 		 *
-		 * Chiave, cipher, parametri out (ids, nonce, chiave)
+		 * @param[in] k Chiave simmetrica per decifrare
+		 * @param[in] cptxt Crittogramma da decifrare
+		 * @param[out] *ID1 Conterrà l'id dell'utente 1 decifrato
+		 * @param[out] *ID2 Conterrà l'id dell'utente 2 decifrato
+		 * @param[out] *nonce Conterrà il nonce decifrato
+		 * @param[out] &pub Conterrà la chiave pubblica decifrata
+		 * @see generic_decrypt()
 		 */
 		void sym_decrypt(const unsigned char* k, const string cptxt, int* ID1,
 				int* ID2, int* nonce, string& pub);
 
-		//funzioni che realizzano il corpo della cifratura/decifratura
+		/**
+		 * Realizza la funzione di cifratura di base
+		 *
+		 * @param[in] *k Chiave simmetrica
+		 * @param[in] *msg Messaggio da cifrare
+		 * @param[in] msg_ll Lunghezza del plaintext
+		 * @return Ciphertext ottenuto con la cifratura
+		 */
 		string generic_encrypt(unsigned char* k, unsigned char* msg, int msg_ll);
+
+		/**
+		 * Realizza la funzione di decifratura di base
+		 *
+		 * @param[in] *k Chiave simmetrica
+		 * @param[in] *cipher Crittogramma da decifrare
+		 * @param[in] msg_ll Lunghezza del plaintext
+		 * @return Plaintext ottunuto con la decifratura
+		 */
 		string generic_decrypt(unsigned char* k, unsigned char* cipher, int msg_ll);
 
 };
